@@ -1,0 +1,20 @@
+{
+  "$schema": "./build.config.v2.schema.json",
+  "versionEnv": "BUILD_VERSION",
+  "artifactsVersion": "local",
+
+  "projectGroups": {
+    "packages": {
+      "sourceDir": "src",
+      "action": "pack",
+      "include": ["UnifyBuild.Nuke"],
+      "exclude": []
+    }
+  },
+
+  "packProperties": {
+    "GeneratePackageOnBuild": "false"
+  },
+
+  "syncLocalNugetFeed": false
+}

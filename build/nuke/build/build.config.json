@@ -1,0 +1,11 @@
+{
+  "solutionPath": "",
+  "sourceDir": "dotnet",
+  "websiteDir": "website",
+  "frameworkDirs": ["framework"],
+  "pluginDirs": ["plugins"],
+  "packPlugins": true,
+  "packFramework": true,
+  "publishProjectPaths": [],
+  "packProjectPaths": []
+}
