@@ -1,0 +1,12 @@
+.nuke/temp/
+.vscode/
+
+node_modules/
+
+.hub-cache/
+.agent/
+.agents/
+.hubwork/
+
+[Bb][Ii][Nn]/
+[Oo][Bb][Jj]/

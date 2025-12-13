@@ -1,0 +1,58 @@
+version: "3"
+
+vars:
+  HUB_PACKAGE_DIR: node_modules/@giantcroissant-lunar/lunar-snake-hub
+  NUKE_DIR_WIN: build\\nuke
+  NUKE_DIR_UNIX: build/nuke
+  GRAPH_HTML: .nuke/temp/execution-plan.html
+
+tasks:
+  hub:install-hooks:
+    desc: Install pre-commit hooks from lunar-snake-hub into .git/hooks
+    cmds:
+      - cmd: node {{.HUB_PACKAGE_DIR}}/bin/hub-install-hooks.js
+
+  hub:uninstall-hooks:
+    desc: Uninstall pre-commit hooks and restore backups
+    cmds:
+      - cmd: node {{.HUB_PACKAGE_DIR}}/bin/hub-uninstall-hooks.js
+
+  hub:symlink-agent:
+    desc: Create .agent link to hub agent rules (for IDE agents)
+    cmds:
+      - cmd: |
+          if not exist .agent (
+            mklink /J .agent node_modules\@giantcroissant-lunar\lunar-snake-hub\.agent
+          ) else (
+            echo .agent already exists, skipping
+          )
+        platforms: [windows]
+      - cmd: |
+          if [ -L .agent ] || [ -e .agent ]; then
+            echo ".agent already exists, skipping"
+          else
+            ln -s {{.HUB_PACKAGE_DIR}}/.agent .agent
+          fi
+        platforms: [linux, darwin]
+
+  graph:
+    desc: Generate NUKE target dependency graph (execution plan HTML)
+    vars:
+      TARGET: '{{default "PackProjects" .TARGET}}'
+    cmds:
+      - cmd: '{{.NUKE_DIR_WIN}}\\build.cmd {{.TARGET}} --plan'
+        platforms: [windows]
+      - cmd: '{{.NUKE_DIR_UNIX}}/build.sh {{.TARGET}} --plan'
+        platforms: [linux, darwin]
+      - cmd: echo Graph written to {{.GRAPH_HTML}}
+
+  graph:open:
+    desc: Generate + open the NUKE execution plan graph
+    deps: [graph]
+    cmds:
+      - cmd: powershell -NoProfile -Command "Start-Process (Resolve-Path '{{.GRAPH_HTML}}')"
+        platforms: [windows]
+      - cmd: xdg-open '{{.GRAPH_HTML}}'
+        platforms: [linux]
+      - cmd: open '{{.GRAPH_HTML}}'
+        platforms: [darwin]
