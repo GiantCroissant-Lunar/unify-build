@@ -56,3 +56,23 @@ tasks:
         platforms: [linux]
       - cmd: open '{{.GRAPH_HTML}}'
         platforms: [darwin]
+
+  nuke:compile:
+    desc: Run NUKE Compile (build)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - cmd: '{{.NUKE_DIR_WIN}}\\build.cmd Compile --configuration {{.CONFIGURATION}}'
+        platforms: [windows]
+      - cmd: '{{.NUKE_DIR_UNIX}}/build.sh Compile --configuration {{.CONFIGURATION}}'
+        platforms: [linux, darwin]
+
+  nuke:pack-projects:
+    desc: Run NUKE PackProjects (build NuGet packages)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - cmd: '{{.NUKE_DIR_WIN}}\\build.cmd PackProjects --configuration {{.CONFIGURATION}}'
+        platforms: [windows]
+      - cmd: '{{.NUKE_DIR_UNIX}}/build.sh PackProjects --configuration {{.CONFIGURATION}}'
+        platforms: [linux, darwin]
