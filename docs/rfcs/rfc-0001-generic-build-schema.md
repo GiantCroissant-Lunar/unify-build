@@ -304,8 +304,8 @@ public sealed class ProjectGroup
 
 **Prerequisite:** Phase 1 complete, UnifyBuild.Nuke v2.0.0 published to local NuGet feed
 
-**Create v2 Config for unify-build:**
-- [ ] Create `build/build.config.v2.json` using v2 schema:
+**Create config for unify-build:**
+- [ ] Create `build/build.config.json`:
   ```json
   {
     "versionEnv": "BUILD_VERSION",
@@ -329,7 +329,7 @@ public sealed class ProjectGroup
   class Build : UnifyBuildBase
   {
       protected override BuildContext Context =>
-          BuildContextLoader.FromJson(RootDirectory / ".." / "..", "build.config.v2.json");
+          BuildContextLoader.FromJson(RootDirectory / ".." / "..", "build.config.json");
 
       public static int Main() => Execute<Build>(x => x.PackProjects);
   }
@@ -403,7 +403,7 @@ public sealed class ProjectGroup
 
 ### Dogfooding Validation
 
-Create `build/build.config.v2.json` for unify-build itself:
+Create `build/build.config.json` for unify-build itself:
 ```json
 {
   "versionEnv": "BUILD_VERSION",
@@ -423,7 +423,7 @@ Then migrate `build/nuke/build/Build.cs` to:
 class Build : UnifyBuildBase  // Instead of: NukeBuild, IBuildConfig, ...
 {
     protected override BuildContext Context =>
-        BuildContextLoader.FromJson(RootDirectory, "build.config.v2.json");
+        BuildContextLoader.FromJson(RootDirectory, "build.config.json");
 
     public static int Main() => Execute<Build>(x => x.PackProjects);
 }

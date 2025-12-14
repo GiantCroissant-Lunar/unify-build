@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "./build.config.v2.schema.json",
-  "title": "UnifyBuild build.config v2",
+  "$id": "./build.config.schema.json",
+  "title": "UnifyBuild build.config",
   "type": "object",
   "additionalProperties": false,
   "properties": {

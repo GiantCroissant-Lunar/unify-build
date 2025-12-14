@@ -1,5 +1,5 @@
 {
-  "$schema": "./build.config.v2.schema.json",
+  "$schema": "./build.config.schema.json",
   "versionEnv": "BUILD_VERSION",
   "artifactsVersion": "local",
 
