@@ -1,13 +1,12 @@
 {
   "$schema": "./build.config.schema.json",
-  "versionEnv": "BUILD_VERSION",
-  "artifactsVersion": "local",
+  "versionEnv": "GITVERSION_MAJORMINORPATCH",
 
   "projectGroups": {
     "packages": {
       "sourceDir": "src",
       "action": "pack",
-      "include": ["UnifyBuild.Nuke"],
+      "include": ["UnifyBuild.Nuke", "UnifyBuild.Tool"],
       "exclude": []
     }
   },

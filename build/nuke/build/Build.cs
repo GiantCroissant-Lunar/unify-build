@@ -1,10 +1,15 @@
 using Nuke.Common;
+using Nuke.Common.Tools.GitVersion;
 using UnifyBuild.Nuke;
 
-class Build : UnifyBuildBase
+class Build : NukeBuild, IUnify
 {
-    protected override BuildContext Context =>
-        BuildContextLoader.FromJson(RootDirectory / ".." / "..", "build.config.json");
+    [GitVersion]
+    readonly GitVersion GitVersion;
 
-    public static int Main() => Execute<Build>(x => x.PackProjects);
+    // Nuke resolves RootDirectory from the .nuke directory at the repo root.
+    BuildContext IUnifyBuildConfig.UnifyConfig =>
+        BuildContextLoader.FromJson(RootDirectory, "build.config.json");
+
+    public static int Main() => Execute<Build>(x => ((IUnifyPack)x).PackProjects);
 }
