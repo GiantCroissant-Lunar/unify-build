@@ -11,6 +11,7 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 namespace UnifyBuild.Nuke;
 
+[Obsolete("Use IUnify or individual component interfaces instead. This class will be removed in a future version.")]
 public abstract class UnifyBuildBase : NukeBuild
 {
     [Parameter("Configuration to build - Default is 'Release'")]
