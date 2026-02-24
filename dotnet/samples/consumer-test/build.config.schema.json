@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": ["string", "null"]
+    },
+    "versionEnv": {
+      "type": ["string", "null"]
+    },
+    "artifactsVersion": {
+      "type": ["string", "null"]
+    },
+    "solution": {
+      "type": ["string", "null"]
+    },
+    "projectGroups": {
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "$ref": "#/$defs/projectGroup"
+      }
+    },
+    "compileProjects": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "publishProjects": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "packProjects": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "nativeBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/nativeBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unityBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/unityBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "projectGroup": {
+      "type": "object",
+      "properties": {
+        "sourceDir": {
+          "type": ["string", "null"]
+        },
+        "action": {
+          "type": ["string", "null"]
+        },
+        "include": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "nativeBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "platform": {
+          "type": ["string", "null"]
+        },
+        "configuration": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "unityBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "projectPath": {
+          "type": ["string", "null"]
+        },
+        "buildTarget": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}
