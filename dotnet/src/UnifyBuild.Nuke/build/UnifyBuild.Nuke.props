@@ -1,0 +1,20 @@
+<Project>
+  <!--
+    This props file is automatically imported by NuGet when the UnifyBuild.Nuke package is installed.
+    It defines properties and items for the UnifyBuild schema file.
+  -->
+
+  <PropertyGroup>
+    <UnifyBuildSchemaFile>$(MSBuildThisFileDirectory)..\contentFiles\any\any\build.config.schema.json</UnifyBuildSchemaFile>
+  </PropertyGroup>
+
+  <!-- Exclude the schema file from compilation -->
+  <ItemGroup>
+    <Compile Remove="$(MSBuildThisFileDirectory)..\contentFiles\any\any\*.json" />
+  </ItemGroup>
+
+  <!-- Add the schema file as a None item that will be copied to the project root -->
+  <ItemGroup Condition="Exists('$(UnifyBuildSchemaFile)')">
+    <None Include="$(UnifyBuildSchemaFile)" Link="build.config.schema.json" CopyToOutputDirectory="Never" Visible="false" />
+  </ItemGroup>
+</Project>

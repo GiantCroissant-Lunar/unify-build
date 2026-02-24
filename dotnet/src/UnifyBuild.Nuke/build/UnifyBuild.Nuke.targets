@@ -1,0 +1,31 @@
+<Project>
+  <!--
+    This targets file is automatically imported by NuGet when the UnifyBuild.Nuke package is installed.
+    It copies the build.config.schema.json file to the consumer project root directory.
+
+    Validates Requirements 7.1, 7.2, 7.3:
+    - Requirement 7.1: Copy schema file to Consumer_Project root directory on installation
+    - Requirement 7.2: Schema file is named "build.config.schema.json"
+    - Requirement 7.3: Schema file is updated when package is updated
+  -->
+
+  <Target Name="CopyUnifyBuildSchema" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <UnifyBuildSchemaSource>$(MSBuildThisFileDirectory)..\contentFiles\any\any\build.config.schema.json</UnifyBuildSchemaSource>
+      <UnifyBuildSchemaTarget>$(MSBuildProjectDirectory)\build.config.schema.json</UnifyBuildSchemaTarget>
+    </PropertyGroup>
+
+    <Message Text="UnifyBuild: Checking for schema file at: $(UnifyBuildSchemaSource)" Importance="high" />
+    <Message Text="UnifyBuild: Schema file exists: $([System.IO.File]::Exists('$(UnifyBuildSchemaSource)'))" Importance="high" />
+
+    <!-- Copy schema file to project root if it exists in the package -->
+    <Copy SourceFiles="$(UnifyBuildSchemaSource)"
+          DestinationFiles="$(UnifyBuildSchemaTarget)"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(UnifyBuildSchemaSource)')" />
+
+    <Message Text="UnifyBuild: Copied schema to: $(UnifyBuildSchemaTarget)"
+             Condition="Exists('$(UnifyBuildSchemaSource)')"
+             Importance="high" />
+  </Target>
+</Project>

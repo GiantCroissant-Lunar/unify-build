@@ -18,11 +18,20 @@
 
   <!-- Include generated schema file in NuGet package -->
   <ItemGroup>
-    <None Include="$(MSBuildProjectDirectory)\..\..\..\..\build\_artifacts\$(Version)\build.config.schema.json" 
-          Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\..\build\_artifacts\$(Version)\build.config.schema.json')"
-          Pack="true" 
-          PackagePath="contentFiles/any/any;content" 
-          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\build\_artifacts\3.0.0\build.config.schema.json"
+          Pack="true"
+          PackagePath="contentFiles\any\any"
+          Visible="false" />
+  </ItemGroup>
+
+  <!-- Include build targets file to copy schema to consumer projects -->
+  <ItemGroup>
+    <None Include="build\UnifyBuild.Nuke.props"
+          Pack="true"
+          PackagePath="build" />
+    <None Include="build\UnifyBuild.Nuke.targets"
+          Pack="true"
+          PackagePath="build" />
   </ItemGroup>
 
 </Project>
