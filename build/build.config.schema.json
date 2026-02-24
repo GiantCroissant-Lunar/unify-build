@@ -37,13 +37,39 @@
       "additionalProperties": { "type": "string" }
     },
 
+    "packIncludeSymbols": { "type": "boolean", "default": false },
+
     "syncLocalNugetFeed": { "type": "boolean", "default": false },
     "localNugetFeedRoot": { "type": ["string", "null"] },
     "localNugetFeedFlatSubdir": { "type": ["string", "null"], "default": "flat" },
     "localNugetFeedHierarchicalSubdir": { "type": ["string", "null"], "default": "hierarchical" },
-    "localNugetFeedBaseUrl": { "type": ["string", "null"] }
+    "localNugetFeedBaseUrl": { "type": ["string", "null"] },
+
+    "nativeBuild": { "$ref": "#/$defs/nativeBuild" }
   },
   "$defs": {
+    "nativeBuild": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "cmakeSourceDir": { "type": ["string", "null"], "default": "native" },
+        "cmakeBuildDir": { "type": ["string", "null"], "default": "native/build" },
+        "cmakePreset": { "type": ["string", "null"] },
+        "cmakeOptions": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        },
+        "buildConfig": { "type": ["string", "null"], "default": "Release" },
+        "autoDetectVcpkg": { "type": "boolean", "default": true },
+        "outputDir": { "type": ["string", "null"] },
+        "artifactPatterns": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "default": ["*.dll", "*.so", "*.dylib", "*.lib", "*.a"]
+        }
+      }
+    },
     "projectGroup": {
       "type": "object",
       "additionalProperties": false,

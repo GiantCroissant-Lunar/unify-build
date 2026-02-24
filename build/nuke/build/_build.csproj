@@ -9,11 +9,13 @@
     <NukeScriptDirectory>..</NukeScriptDirectory>
     <NukeTelemetryVersion>1</NukeTelemetryVersion>
     <IsPackable>false</IsPackable>
+    <!-- Enable BinaryFormatter for NUKE 8.0.0 compatibility on .NET 8 -->
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Nuke.Common" Version="8.0.0" />
-    <ProjectReference Include="..\..\..\src\UnifyBuild.Nuke\UnifyBuild.Nuke.csproj" />
+    <ProjectReference Include="..\..\..\dotnet\src\UnifyBuild.Nuke\UnifyBuild.Nuke.csproj" />
   </ItemGroup>
 
   <ItemGroup>

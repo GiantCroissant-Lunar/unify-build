@@ -1,19 +1,21 @@
 {
   "$schema": "./build.config.schema.json",
   "versionEnv": "GITVERSION_MAJORMINORPATCH",
+  "artifactsVersion": "0.1.10",
 
   "projectGroups": {
     "packages": {
-      "sourceDir": "src",
+      "sourceDir": "dotnet/src",
       "action": "pack",
       "include": ["UnifyBuild.Nuke", "UnifyBuild.Tool"],
       "exclude": []
     }
   },
 
+  "packIncludeSymbols": true,
   "packProperties": {
     "GeneratePackageOnBuild": "false"
   },
-
-  "syncLocalNugetFeed": false
+  "syncLocalNugetFeed": true,
+  "localNugetFeedRoot": "build/_artifacts"
 }
