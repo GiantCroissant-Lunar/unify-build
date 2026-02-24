@@ -1,16 +1,29 @@
  # unify-build
  
- Reusable build tooling (NUKE) used across GiantCroissant-Lunar repos.
- 
- ## UnifyBuild.Nuke
- 
- `UnifyBuild.Nuke` is a small library consumed by NUKE build scripts to:
+Reusable build tooling (NUKE) used across GiantCroissant-Lunar repos.
+
+## Usage (recommended)
+
+This repo ships a local `dotnet tool` (`UnifyBuild.Tool`) that runs build targets based on `build.config.json`.
+
+From the repo root:
+
+```powershell
+dotnet tool restore
+dotnet unify-build PackProjects --configuration Release
+```
+
+Targets are NUKE targets (e.g. `Compile`, `PackProjects`, `PublishHosts`, `PublishPlugins`, `SyncLatestArtifacts`).
+
+## UnifyBuild.Nuke
+
+`UnifyBuild.Nuke` is a small library consumed by NUKE build scripts to:
  
  - Locate and parse build configuration JSON
  - Discover `.csproj` files from configured directories
  - Provide a unified `BuildContext` used by build targets
  
- ### Build config schema
+### Build config schema
  
  Create a config file such as `build/build.config.json`:
  

@@ -5,6 +5,7 @@ vars:
   NUKE_DIR_WIN: build\\nuke
   NUKE_DIR_UNIX: build/nuke
   GRAPH_HTML: .nuke/temp/execution-plan.html
+  UNIFY_BUILD_TOOL: dotnet tool run unify-build --
 
 tasks:
   hub:install-hooks:
@@ -40,10 +41,8 @@ tasks:
     vars:
       TARGET: '{{default "PackProjects" .TARGET}}'
     cmds:
-      - cmd: '{{.NUKE_DIR_WIN}}\\build.cmd {{.TARGET}} --plan'
-        platforms: [windows]
-      - cmd: '{{.NUKE_DIR_UNIX}}/build.sh {{.TARGET}} --plan'
-        platforms: [linux, darwin]
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} {{.TARGET}} --plan'
       - cmd: echo Graph written to {{.GRAPH_HTML}}
 
   graph:open:
@@ -62,17 +61,68 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
-      - cmd: '{{.NUKE_DIR_WIN}}\\build.cmd Compile --configuration {{.CONFIGURATION}}'
-        platforms: [windows]
-      - cmd: '{{.NUKE_DIR_UNIX}}/build.sh Compile --configuration {{.CONFIGURATION}}'
-        platforms: [linux, darwin]
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} Compile --configuration {{.CONFIGURATION}}'
 
   nuke:pack-projects:
     desc: Run NUKE PackProjects (build NuGet packages)
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
-      - cmd: '{{.NUKE_DIR_WIN}}\\build.cmd PackProjects --configuration {{.CONFIGURATION}}'
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} PackProjects --configuration {{.CONFIGURATION}}'
+
+  nuke:publish-hosts:
+    desc: Run NUKE PublishHosts (publish executables/hosts)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} PublishHosts --configuration {{.CONFIGURATION}}'
+
+  nuke:publish-plugins:
+    desc: Run NUKE PublishPlugins (publish plugins/runtime libraries)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} PublishPlugins --configuration {{.CONFIGURATION}}'
+
+  nuke:publish-projects:
+    desc: Run NUKE PublishProjects (publish explicit projects from build.config.json)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} PublishProjects --configuration {{.CONFIGURATION}}'
+
+  nuke:sync-latest-artifacts:
+    desc: Run NUKE SyncLatestArtifacts (sync build/_artifacts/{version} to build/_artifacts/latest)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - cmd: dotnet tool restore
+      - cmd: '{{.UNIFY_BUILD_TOOL}} SyncLatestArtifacts --configuration {{.CONFIGURATION}}'
+
+  dogfood:
+    desc: Dogfood - Build unify-build using its own tooling and verify output
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - task: nuke:pack-projects
+        vars:
+          CONFIGURATION: '{{.CONFIGURATION}}'
+      - cmd: powershell -NoProfile -ExecutionPolicy Bypass -File build/verify-dogfood.ps1
         platforms: [windows]
-      - cmd: '{{.NUKE_DIR_UNIX}}/build.sh PackProjects --configuration {{.CONFIGURATION}}'
-        platforms: [linux, darwin]
+
+  dogfood:tool:
+    desc: Dogfood - Build using the dotnet tool (requires tool to be installed)
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - echo "Building UnifyBuild.Tool package..."
+      - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Tool/UnifyBuild.Tool.csproj -o build/_artifacts/local/flat
+      - echo "Installing local tool..."
+      - dotnet tool install --local --add-source build/_artifacts/local/flat UnifyBuild.Tool || dotnet tool update --local --add-source build/_artifacts/local/flat UnifyBuild.Tool
+      - echo "Running tool to build itself..."
+      - dotnet unify-build PackProjects --configuration {{.CONFIGURATION}}
