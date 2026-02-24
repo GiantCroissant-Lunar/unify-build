@@ -70,6 +70,8 @@
             "enum": [
               "Compile",
               "CompileProjects",
+              "GenerateSchema",
+              "InstallQuickTypeTool",
               "Pack",
               "PackAll",
               "PackContracts",
@@ -89,6 +91,8 @@
             "enum": [
               "Compile",
               "CompileProjects",
+              "GenerateSchema",
+              "InstallQuickTypeTool",
               "Pack",
               "PackAll",
               "PackContracts",

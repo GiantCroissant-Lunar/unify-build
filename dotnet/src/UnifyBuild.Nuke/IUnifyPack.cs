@@ -47,6 +47,7 @@ public interface IUnifyPack : IUnifyCompile
     /// </summary>
     Target Pack => _ => _
         .DependsOn<IUnifyCompile>(x => x.Compile)
+        .TryDependsOn<IUnifySchemaGeneration>(x => x.GenerateSchema)
         .Executes(() =>
         {
             if (UnifyConfig.NuGetOutputDir is null)

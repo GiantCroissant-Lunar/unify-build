@@ -16,4 +16,13 @@
     <PackageReference Include="Nuke.Common" Version="8.0.0" />
   </ItemGroup>
 
+  <!-- Include generated schema file in NuGet package -->
+  <ItemGroup>
+    <None Include="$(MSBuildProjectDirectory)\..\..\..\..\build\_artifacts\$(Version)\build.config.schema.json" 
+          Condition="Exists('$(MSBuildProjectDirectory)\..\..\..\..\build\_artifacts\$(Version)\build.config.schema.json')"
+          Pack="true" 
+          PackagePath="contentFiles/any/any;content" 
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

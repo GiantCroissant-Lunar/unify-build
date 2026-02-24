@@ -1,0 +1,9 @@
+{
+  "name": "unifybuild-tools",
+  "version": "1.0.0",
+  "description": "Build tools for UnifyBuild",
+  "private": true,
+  "dependencies": {
+    "quicktype": "^23.0.0"
+  }
+}

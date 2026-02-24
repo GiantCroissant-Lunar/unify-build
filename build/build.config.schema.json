@@ -45,7 +45,8 @@
     "localNugetFeedHierarchicalSubdir": { "type": ["string", "null"], "default": "hierarchical" },
     "localNugetFeedBaseUrl": { "type": ["string", "null"] },
 
-    "nativeBuild": { "$ref": "#/$defs/nativeBuild" }
+    "nativeBuild": { "$ref": "#/$defs/nativeBuild" },
+    "unityBuild": { "$ref": "#/$defs/unityBuild" }
   },
   "$defs": {
     "nativeBuild": {
@@ -93,6 +94,38 @@
         "properties": {
           "type": ["object", "null"],
           "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "unityBuild": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "targetFramework": { "type": ["string", "null"], "default": "netstandard2.1" },
+        "unityProjectRoot": { "type": "string", "default": "" },
+        "packages": {
+          "type": ["array", "null"],
+          "items": { "$ref": "#/$defs/unityPackageMapping" }
+        }
+      }
+    },
+    "unityPackageMapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "packageName": { "type": "string", "default": "" },
+        "scopedIndex": { "type": "string", "default": "" },
+        "sourceProjects": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        },
+        "sourceProjectGlobs": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
+        },
+        "dependencyDlls": {
+          "type": ["array", "null"],
+          "items": { "type": "string" }
         }
       }
     }
