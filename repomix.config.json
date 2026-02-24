@@ -1,0 +1,31 @@
+{
+  "output": {
+    "filePath": "repomix-output.txt",
+    "style": "markdown",
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 5,
+    "showLineNumbers": false
+  },
+  "include": [
+    "**/*.cs",
+    "**/*.csproj",
+    "**/*.sln",
+    "**/*.json",
+    "**/*.yml",
+    "**/*.yaml",
+    "**/*.md",
+    "**/Taskfile.yml"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/bin/**",
+      "**/obj/**",
+      "**/node_modules/**",
+      "**/.nuke/temp/**",
+      "**/repomix-output.txt"
+    ]
+  }
+}

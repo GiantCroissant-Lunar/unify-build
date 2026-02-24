@@ -1,0 +1,12 @@
+{
+  "name": "unify-build",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UnifyBuild - Unified build configuration system",
+  "scripts": {
+    "repomix": "repomix"
+  },
+  "devDependencies": {
+    "repomix": "^0.2.0"
+  }
+}

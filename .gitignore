@@ -10,3 +10,6 @@ node_modules/
 
 [Bb][Ii][Nn]/
 [Oo][Bb][Jj]/
+
+# Repomix output
+repomix-output.txt
