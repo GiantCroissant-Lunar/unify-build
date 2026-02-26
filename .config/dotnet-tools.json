@@ -4,11 +4,15 @@
   "tools": {
     "unifybuild.tool": {
       "version": "3.0.0",
-      "commands": ["unify-build"]
+      "commands": [
+        "unify-build"
+      ]
     },
     "gitversion.tool": {
-      "version": "6.5.1",
-      "commands": ["dotnet-gitversion"]
+      "version": "6.6.0",
+      "commands": [
+        "dotnet-gitversion"
+      ]
     }
   }
 }
