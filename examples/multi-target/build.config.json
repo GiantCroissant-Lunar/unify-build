@@ -1,0 +1,12 @@
+{
+  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "solution": "MultiTarget.sln",
+  "projectGroups": {
+    "packages": {
+      "sourceDir": "src",
+      "action": "pack",
+      "include": ["MultiTarget.Lib"]
+    }
+  },
+  "packIncludeSymbols": true
+}

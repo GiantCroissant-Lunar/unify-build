@@ -1,0 +1,16 @@
+{
+  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "solution": "DotnetApp.sln",
+  "projectGroups": {
+    "hosts": {
+      "sourceDir": "src",
+      "action": "publish",
+      "include": ["MyApp.Api"]
+    },
+    "libraries": {
+      "sourceDir": "src",
+      "action": "compile",
+      "include": ["MyApp.Shared"]
+    }
+  }
+}

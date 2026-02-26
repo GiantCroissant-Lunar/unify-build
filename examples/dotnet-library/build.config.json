@@ -1,0 +1,12 @@
+{
+  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "solution": "DotnetLibrary.sln",
+  "projectGroups": {
+    "packages": {
+      "sourceDir": "src",
+      "action": "pack",
+      "include": ["MyLib.Core", "MyLib.Abstractions"]
+    }
+  },
+  "packIncludeSymbols": true
+}

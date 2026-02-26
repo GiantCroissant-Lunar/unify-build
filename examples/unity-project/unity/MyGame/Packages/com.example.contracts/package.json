@@ -1,0 +1,6 @@
+{
+  "name": "com.example.contracts",
+  "version": "1.0.0",
+  "displayName": "Contracts",
+  "description": "Shared contracts between .NET server and Unity client"
+}

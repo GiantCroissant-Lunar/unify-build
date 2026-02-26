@@ -1,0 +1,18 @@
+{
+  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "solution": "NativeCmake.sln",
+  "projectGroups": {
+    "interop": {
+      "sourceDir": "src",
+      "action": "pack",
+      "include": ["NativeInterop"]
+    }
+  },
+  "nativeBuild": {
+    "enabled": true,
+    "cmakeSourceDir": "native",
+    "buildConfig": "Release",
+    "autoDetectVcpkg": false,
+    "artifactPatterns": ["*.dll", "*.so", "*.dylib"]
+  }
+}

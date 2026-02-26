@@ -1,0 +1,23 @@
+{
+  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "solution": "UnityExample.sln",
+  "projectGroups": {
+    "unity-libs": {
+      "sourceDir": "src",
+      "action": "compile",
+      "include": ["Contracts"]
+    }
+  },
+  "unityBuild": {
+    "targetFramework": "netstandard2.1",
+    "unityProjectRoot": "unity/MyGame",
+    "packages": [
+      {
+        "packageName": "com.example.contracts",
+        "scopedIndex": "scoped-1234",
+        "sourceProjects": ["src/Contracts/Contracts.csproj"],
+        "dependencyDlls": []
+      }
+    ]
+  }
+}

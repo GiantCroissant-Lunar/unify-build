@@ -1,0 +1,16 @@
+{
+  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "solution": "Monorepo.sln",
+  "projectGroups": {
+    "packages": {
+      "sourceDir": "libs",
+      "action": "pack",
+      "include": ["Common", "Logging"]
+    },
+    "services": {
+      "sourceDir": "services",
+      "action": "publish",
+      "include": ["OrderService", "InventoryService"]
+    }
+  }
+}

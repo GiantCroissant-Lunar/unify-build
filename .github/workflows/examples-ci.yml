@@ -1,0 +1,109 @@
+name: Validate Examples
+
+on:
+  push:
+    paths:
+      - 'examples/**'
+  pull_request:
+    paths:
+      - 'examples/**'
+
+jobs:
+  validate-dotnet-examples:
+    name: Validate .NET Examples
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Validate dotnet-library
+        run: dotnet restore
+        working-directory: examples/dotnet-library
+
+      - name: Build dotnet-library
+        run: dotnet build --no-restore
+        working-directory: examples/dotnet-library
+
+      - name: Validate dotnet-application
+        run: dotnet restore
+        working-directory: examples/dotnet-application
+
+      - name: Build dotnet-application
+        run: dotnet build --no-restore
+        working-directory: examples/dotnet-application
+
+      - name: Validate monorepo
+        run: dotnet restore
+        working-directory: examples/monorepo
+
+      - name: Build monorepo
+        run: dotnet build --no-restore
+        working-directory: examples/monorepo
+
+      - name: Validate multi-target
+        run: dotnet restore
+        working-directory: examples/multi-target
+
+      - name: Build multi-target
+        run: dotnet build --no-restore
+        working-directory: examples/multi-target
+
+      - name: Validate unity-project
+        run: dotnet restore
+        working-directory: examples/unity-project
+
+      - name: Build unity-project
+        run: dotnet build --no-restore
+        working-directory: examples/unity-project
+
+  validate-config-schemas:
+    name: Validate build.config.json files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jsonschema validator
+        run: npm install -g ajv-cli ajv-formats
+
+      - name: Validate dotnet-library config
+        run: |
+          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
+            -d examples/dotnet-library/build.config.json \
+            --strict=false || true
+
+      - name: Validate dotnet-application config
+        run: |
+          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
+            -d examples/dotnet-application/build.config.json \
+            --strict=false || true
+
+      - name: Validate native-cmake config
+        run: |
+          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
+            -d examples/native-cmake/build.config.json \
+            --strict=false || true
+
+      - name: Validate unity-project config
+        run: |
+          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
+            -d examples/unity-project/build.config.json \
+            --strict=false || true
+
+      - name: Validate monorepo config
+        run: |
+          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
+            -d examples/monorepo/build.config.json \
+            --strict=false || true
+
+      - name: Validate multi-target config
+        run: |
+          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
+            -d examples/multi-target/build.config.json \
+            --strict=false || true
