@@ -67,6 +67,16 @@ public sealed record BuildContext
     public NativeBuildContext? NativeBuild { get; init; }
 
     /// <summary>
+    /// Rust (Cargo) build configuration.
+    /// </summary>
+    public RustBuildContext? RustBuild { get; init; }
+
+    /// <summary>
+    /// Go build configuration.
+    /// </summary>
+    public GoBuildContext? GoBuild { get; init; }
+
+    /// <summary>
     /// Unity package build configuration for copying netstandard2.1 DLLs.
     /// </summary>
     public UnityBuildContext? UnityBuild { get; init; }

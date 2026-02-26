@@ -13,7 +13,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="UnifyBuild.Nuke.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NJsonSchema" Version="11.1.0" />
     <PackageReference Include="Nuke.Common" Version="8.0.0" />
+    <PackageReference Include="Spectre.Console" Version="0.50.0" />
   </ItemGroup>
 
   <!-- Include generated schema file in NuGet package -->

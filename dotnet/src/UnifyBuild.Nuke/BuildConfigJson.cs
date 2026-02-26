@@ -87,9 +87,223 @@ public sealed class BuildJsonConfig
     public NativeBuildConfig? NativeBuild { get; set; }
 
     /// <summary>
+    /// Rust (Cargo) build configuration.
+    /// </summary>
+    public RustBuildConfig? RustBuild { get; set; }
+
+    /// <summary>
+    /// Go build configuration.
+    /// </summary>
+    public GoBuildConfig? GoBuild { get; set; }
+
+    /// <summary>
     /// Unity package build configuration for copying netstandard2.1 DLLs to Unity packages.
     /// </summary>
     public UnityBuildJsonConfig? UnityBuild { get; set; }
+
+    /// <summary>
+    /// Advanced package management configuration (multi-registry push, signing, SBOM, retention).
+    /// </summary>
+    public PackageManagementConfig? PackageManagement { get; set; }
+
+    /// <summary>
+    /// Performance configuration (caching, change detection).
+    /// </summary>
+    public PerformanceConfig? Performance { get; set; }
+
+    /// <summary>
+    /// Observability configuration (metrics, telemetry).
+    /// </summary>
+    public ObservabilityConfig? Observability { get; set; }
+
+    /// <summary>
+    /// Extensions configuration for loading custom components from external assemblies.
+    /// </summary>
+    public ExtensionsConfig? Extensions { get; set; }
+}
+
+/// <summary>
+/// Configuration for loading custom component plugins from external assemblies.
+/// </summary>
+public sealed class ExtensionsConfig
+{
+    /// <summary>
+    /// Paths to plugin assemblies (.dll) or directories containing plugin assemblies.
+    /// Paths are relative to the repository root.
+    /// </summary>
+    public string[]? PluginPaths { get; set; }
+
+    /// <summary>
+    /// Whether to automatically discover and load plugins from the default plugin directory (build/plugins/).
+    /// Default: false.
+    /// </summary>
+    public bool AutoLoadPlugins { get; set; } = false;
+}
+
+/// <summary>
+/// Advanced package management configuration.
+/// </summary>
+public sealed class PackageManagementConfig
+{
+    /// <summary>
+    /// NuGet registries to publish packages to.
+    /// </summary>
+    public NuGetRegistryConfig[]? Registries { get; set; }
+
+    /// <summary>
+    /// NuGet package signing configuration.
+    /// </summary>
+    public PackageSigningConfig? Signing { get; set; }
+
+    /// <summary>
+    /// SBOM generation configuration.
+    /// </summary>
+    public SbomConfig? Sbom { get; set; }
+
+    /// <summary>
+    /// Package retention policy for local feed cleanup.
+    /// </summary>
+    public RetentionPolicyConfig? Retention { get; set; }
+}
+
+/// <summary>
+/// Configuration for a NuGet registry endpoint.
+/// </summary>
+public sealed class NuGetRegistryConfig
+{
+    /// <summary>
+    /// Display name for the registry (e.g., "NuGet.org", "GitHub Packages").
+    /// </summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Registry URL (e.g., "https://api.nuget.org/v3/index.json").
+    /// </summary>
+    public string Url { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Name of the environment variable containing the API key for this registry.
+    /// </summary>
+    public string? ApiKeyEnvVar { get; set; }
+}
+
+/// <summary>
+/// Configuration for NuGet package signing.
+/// </summary>
+public sealed class PackageSigningConfig
+{
+    /// <summary>
+    /// Path to the signing certificate (.pfx).
+    /// </summary>
+    public string? CertificatePath { get; set; }
+
+    /// <summary>
+    /// Name of the environment variable containing the certificate password.
+    /// </summary>
+    public string? CertificatePasswordEnvVar { get; set; }
+
+    /// <summary>
+    /// Timestamp server URL for countersigning (e.g., "http://timestamp.digicert.com").
+    /// </summary>
+    public string? TimestampUrl { get; set; }
+}
+
+/// <summary>
+/// Configuration for SBOM generation.
+/// </summary>
+public sealed class SbomConfig
+{
+    /// <summary>
+    /// SBOM format: "spdx" or "cyclonedx".
+    /// </summary>
+    public string Format { get; set; } = "spdx";
+
+    /// <summary>
+    /// Output directory for generated SBOM files.
+    /// </summary>
+    public string? OutputDir { get; set; }
+}
+
+/// <summary>
+/// Configuration for package retention policy on local feeds.
+/// </summary>
+public sealed class RetentionPolicyConfig
+{
+    /// <summary>
+    /// Maximum number of versions to keep per package.
+    /// </summary>
+    public int? MaxVersions { get; set; }
+
+    /// <summary>
+    /// Maximum age in days for packages. Older packages are removed.
+    /// </summary>
+    public int? MaxAgeDays { get; set; }
+
+    /// <summary>
+    /// Path to the local NuGet feed directory to apply retention to.
+    /// </summary>
+    public string? LocalFeedPath { get; set; }
+}
+
+/// <summary>
+/// Performance configuration for build caching and change detection.
+/// </summary>
+public sealed class PerformanceConfig
+{
+    /// <summary>
+    /// Whether local build caching is enabled. Default: false.
+    /// </summary>
+    public bool EnableCache { get; set; } = false;
+
+    /// <summary>
+    /// Directory for local cache storage. If null, defaults to build/_cache.
+    /// </summary>
+    public string? CacheDir { get; set; }
+
+    /// <summary>
+    /// Whether file-based change detection is enabled. Default: true.
+    /// </summary>
+    public bool EnableChangeDetection { get; set; } = true;
+
+    /// <summary>
+    /// URL for distributed cache server. When set, cache entries are uploaded/downloaded
+    /// via HTTP PUT/GET using the cache key as the URL path segment.
+    /// Example: "https://cache.example.com/unify-build"
+    /// </summary>
+    public string? DistributedCacheUrl { get; set; }
+
+    /// <summary>
+    /// Maximum degree of parallelism for building independent project groups.
+    /// Defaults to <see cref="Environment.ProcessorCount"/> when null or &lt;= 0.
+    /// </summary>
+    public int? MaxParallelism { get; set; }
+}
+
+/// <summary>
+/// Observability configuration for build metrics and optional telemetry.
+/// </summary>
+public sealed class ObservabilityConfig
+{
+    /// <summary>
+    /// Whether build metrics collection is enabled. Default: true.
+    /// </summary>
+    public bool EnableMetrics { get; set; } = true;
+
+    /// <summary>
+    /// Output format for metrics reports: "json" or "csv". Default: "json".
+    /// </summary>
+    public string MetricsFormat { get; set; } = "json";
+
+    /// <summary>
+    /// Directory for metrics output files. If null, defaults to build/_metrics.
+    /// </summary>
+    public string? MetricsOutputDir { get; set; }
+
+    /// <summary>
+    /// Whether anonymous telemetry collection is enabled. Default: false (opt-in only).
+    /// Telemetry data is stored locally and never sent to any remote server.
+    /// </summary>
+    public bool EnableTelemetry { get; set; } = false;
 }
 
 /// <summary>
@@ -177,6 +391,95 @@ public sealed class NativeBuildConfig
     /// File patterns to collect as artifacts.
     /// </summary>
     public string[]? ArtifactPatterns { get; set; }
+
+    /// <summary>
+    /// Custom commands to execute before and/or after the CMake build.
+    /// Each entry is a shell command string.
+    /// </summary>
+    public string[]? CustomCommands { get; set; }
+
+    /// <summary>
+    /// Target platform for platform-specific configuration (e.g., "windows", "linux", "macos").
+    /// If null, the current OS platform is used.
+    /// </summary>
+    public string? Platform { get; set; }
+}
+
+/// <summary>
+/// JSON configuration for Rust (Cargo) builds.
+/// </summary>
+public sealed class RustBuildConfig
+{
+    /// <summary>
+    /// Whether Rust builds are enabled. Default: true.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Directory containing Cargo.toml. Relative to repo root.
+    /// </summary>
+    public string? CargoManifestDir { get; set; }
+
+    /// <summary>
+    /// Cargo build profile (debug, release, or custom). Default: "release".
+    /// </summary>
+    public string Profile { get; set; } = "release";
+
+    /// <summary>
+    /// Cargo features to enable.
+    /// </summary>
+    public string[]? Features { get; set; }
+
+    /// <summary>
+    /// Target triple for cross-compilation (e.g., "x86_64-pc-windows-msvc").
+    /// </summary>
+    public string? TargetTriple { get; set; }
+
+    /// <summary>
+    /// Output directory for Rust artifacts. Default: "build/_artifacts/{version}/rust".
+    /// </summary>
+    public string? OutputDir { get; set; }
+
+    /// <summary>
+    /// File patterns to collect as artifacts (e.g., "*.dll", "*.so", "*.exe").
+    /// </summary>
+    public string[]? ArtifactPatterns { get; set; }
+}
+
+/// <summary>
+/// JSON configuration for Go builds.
+/// </summary>
+public sealed class GoBuildConfig
+{
+    /// <summary>
+    /// Whether Go builds are enabled. Default: true.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Directory containing go.mod. Relative to repo root.
+    /// </summary>
+    public string? GoModuleDir { get; set; }
+
+    /// <summary>
+    /// Build flags to pass to go build (e.g., ["-ldflags", "-s -w"]).
+    /// </summary>
+    public string[]? BuildFlags { get; set; }
+
+    /// <summary>
+    /// Output binary name (used with -o flag).
+    /// </summary>
+    public string? OutputBinary { get; set; }
+
+    /// <summary>
+    /// Output directory for Go artifacts.
+    /// </summary>
+    public string? OutputDir { get; set; }
+
+    /// <summary>
+    /// Environment variables for the go build process (e.g., GOOS, GOARCH).
+    /// </summary>
+    public Dictionary<string, string>? EnvVars { get; set; }
 }
 
 /// <summary>
@@ -276,8 +579,41 @@ public static class BuildContextLoader
                 + "See docs/rfcs/rfc-0001-generic-build-schema.md for schema documentation.");
         }
 
+        // Check for deprecated v1 properties and log warnings
+        CheckForDeprecatedProperties(json);
+
         global::Serilog.Log.Information("Loading build configuration");
         return LoadConfig(repoRoot, json, options, externalVersion);
+    }
+
+    /// <summary>
+    /// Checks the raw JSON for deprecated v1 property names and logs warnings with migration guidance.
+    /// </summary>
+    private static void CheckForDeprecatedProperties(string json)
+    {
+        var deprecatedMappings = new (string Property, string Guidance)[]
+        {
+            ("hostsDir", "Use projectGroups with action 'publish' instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("pluginsDir", "Use projectGroups with action 'pack' instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("contractsDir", "Use projectGroups with action 'pack' instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("includeHosts", "Use projectGroups[].include instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("excludeHosts", "Use projectGroups[].exclude instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("includePlugins", "Use projectGroups[].include instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("excludePlugins", "Use projectGroups[].exclude instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("includeContracts", "Use projectGroups[].include instead. Run 'dotnet unify-build migrate' to auto-migrate."),
+            ("excludeContracts", "Use projectGroups[].exclude instead. Run 'dotnet unify-build migrate' to auto-migrate.")
+        };
+
+        foreach (var (property, guidance) in deprecatedMappings)
+        {
+            // Check for the property name in JSON (both camelCase and PascalCase)
+            if (json.Contains($"\"{property}\"", StringComparison.OrdinalIgnoreCase))
+            {
+                global::Serilog.Log.Warning(
+                    "[DEPRECATED] Property '{Property}' is deprecated. {Guidance}",
+                    property, guidance);
+            }
+        }
     }
 
     private static BuildContext LoadConfig(AbsolutePath repoRoot, string json, JsonSerializerOptions options, string? externalVersion = null)
@@ -363,6 +699,8 @@ public static class BuildContextLoader
             PackIncludeSymbols = cfg.PackIncludeSymbols,
             PackProperties = cfg.PackProperties ?? new Dictionary<string, string>(),
             NativeBuild = CreateNativeBuildContext(repoRoot, cfg.NativeBuild, artifactsVersion),
+            RustBuild = CreateRustBuildContext(repoRoot, cfg.RustBuild, artifactsVersion),
+            GoBuild = CreateGoBuildContext(repoRoot, cfg.GoBuild, artifactsVersion),
             UnityBuild = CreateUnityBuildContext(repoRoot, cfg.UnityBuild)
         };
 
@@ -377,21 +715,21 @@ public static class BuildContextLoader
         // Auto-detect if native directory exists
         var defaultSourceDir = repoRoot / "native";
         var cmakeListsPath = defaultSourceDir / "CMakeLists.txt";
-        
+
         // If no config and no CMakeLists.txt, no native build
         if (cfg is null && !File.Exists(cmakeListsPath))
             return null;
 
-        var sourceDir = cfg?.CMakeSourceDir is not null 
-            ? repoRoot / cfg.CMakeSourceDir 
+        var sourceDir = cfg?.CMakeSourceDir is not null
+            ? repoRoot / cfg.CMakeSourceDir
             : defaultSourceDir;
-        
-        var buildDir = cfg?.CMakeBuildDir is not null 
-            ? repoRoot / cfg.CMakeBuildDir 
+
+        var buildDir = cfg?.CMakeBuildDir is not null
+            ? repoRoot / cfg.CMakeBuildDir
             : sourceDir / "build";
-        
-        var outputDir = cfg?.OutputDir is not null 
-            ? repoRoot / cfg.OutputDir 
+
+        var outputDir = cfg?.OutputDir is not null
+            ? repoRoot / cfg.OutputDir
             : repoRoot / "build" / "_artifacts" / artifactsVersion / "native";
 
         return new NativeBuildContext
@@ -404,7 +742,66 @@ public static class BuildContextLoader
             BuildConfig = cfg?.BuildConfig ?? "Release",
             AutoDetectVcpkg = cfg?.AutoDetectVcpkg ?? true,
             OutputDir = outputDir,
-            ArtifactPatterns = cfg?.ArtifactPatterns ?? new[] { "*.dll", "*.so", "*.dylib", "*.lib", "*.a" }
+            ArtifactPatterns = cfg?.ArtifactPatterns ?? new[] { "*.dll", "*.so", "*.dylib", "*.lib", "*.a" },
+            CustomCommands = cfg?.CustomCommands ?? Array.Empty<string>(),
+            Platform = cfg?.Platform
+        };
+    }
+
+    private static RustBuildContext? CreateRustBuildContext(AbsolutePath repoRoot, RustBuildConfig? cfg, string artifactsVersion)
+    {
+        if (cfg is not null && !cfg.Enabled)
+            return null;
+
+        // If no config provided, no Rust build
+        if (cfg is null)
+            return null;
+
+        var manifestDir = cfg.CargoManifestDir is not null
+            ? repoRoot / cfg.CargoManifestDir
+            : repoRoot;
+
+        var outputDir = cfg.OutputDir is not null
+            ? repoRoot / cfg.OutputDir
+            : repoRoot / "build" / "_artifacts" / artifactsVersion / "rust";
+
+        return new RustBuildContext
+        {
+            Enabled = cfg.Enabled,
+            CargoManifestDir = manifestDir,
+            Profile = cfg.Profile,
+            Features = cfg.Features ?? Array.Empty<string>(),
+            TargetTriple = cfg.TargetTriple,
+            OutputDir = outputDir,
+            ArtifactPatterns = cfg.ArtifactPatterns ?? new[] { "*.dll", "*.so", "*.dylib", "*.exe" }
+        };
+    }
+
+    private static GoBuildContext? CreateGoBuildContext(AbsolutePath repoRoot, GoBuildConfig? cfg, string artifactsVersion)
+    {
+        if (cfg is not null && !cfg.Enabled)
+            return null;
+
+        // If no config provided, no Go build
+        if (cfg is null)
+            return null;
+
+        var moduleDir = cfg.GoModuleDir is not null
+            ? repoRoot / cfg.GoModuleDir
+            : repoRoot;
+
+        var outputDir = cfg.OutputDir is not null
+            ? repoRoot / cfg.OutputDir
+            : repoRoot / "build" / "_artifacts" / artifactsVersion / "go";
+
+        return new GoBuildContext
+        {
+            Enabled = cfg.Enabled,
+            GoModuleDir = moduleDir,
+            BuildFlags = cfg.BuildFlags ?? Array.Empty<string>(),
+            OutputBinary = cfg.OutputBinary,
+            OutputDir = outputDir,
+            EnvVars = cfg.EnvVars ?? new Dictionary<string, string>()
         };
     }
 
@@ -524,13 +921,8 @@ public static class BuildContextLoader
             return new List<string>();
         }
 
-        var allProjects = Directory
-            .GetFiles(sourceDir, "*.csproj", SearchOption.AllDirectories)
-            .Where(p => !p.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase)
-                        && !p.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase))
-            .ToList();
-
-        var projectNames = allProjects.Select(p => Path.GetFileNameWithoutExtension(p)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        // Use EnumerationOptions for faster file enumeration, skipping known non-project directories
+        var allProjects = EnumerateProjectFiles(sourceDir).ToList();
 
         // Apply include filter
         if (group.Include is not null && group.Include.Length > 0)
@@ -549,7 +941,43 @@ public static class BuildContextLoader
         return allProjects;
     }
 
+    /// <summary>
+    /// Known directories to skip during project discovery for performance.
+    /// </summary>
+    private static readonly HashSet<string> SkippedDirectories = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "bin", "obj", "node_modules", ".git", ".vs", ".idea", "TestResults", "packages"
+    };
+
+    /// <summary>
+    /// Recursively enumerates .csproj files, skipping known non-project directories early
+    /// for better performance in large repositories.
+    /// </summary>
+    private static IEnumerable<string> EnumerateProjectFiles(string directory)
+    {
+        if (!Directory.Exists(directory))
+            yield break;
+
+        // Yield .csproj files in current directory
+        foreach (var file in Directory.EnumerateFiles(directory, "*.csproj"))
+        {
+            yield return file;
+        }
+
+        // Recurse into subdirectories, skipping known non-project dirs
+        foreach (var subDir in Directory.EnumerateDirectories(directory))
+        {
+            var dirName = Path.GetFileName(subDir);
+            if (dirName.Length > 0 && dirName[0] == '.')
+                continue; // Skip all hidden directories
+            if (SkippedDirectories.Contains(dirName))
+                continue;
+
+            foreach (var file in EnumerateProjectFiles(subDir))
+                yield return file;
+        }
+    }
+
     private static string? GetEnv(string? name)
         => string.IsNullOrWhiteSpace(name) ? null : Environment.GetEnvironmentVariable(name);
 }
-

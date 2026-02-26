@@ -48,10 +48,70 @@
         }
       ]
     },
+    "rustBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/rustBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "goBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/goBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "unityBuild": {
       "anyOf": [
         {
           "$ref": "#/$defs/unityBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "performance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/performance"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observability": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/observability"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "packageManagement": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/packageManagement"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "extensions": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/extensions"
         },
         {
           "type": "null"
@@ -89,25 +149,329 @@
         "enabled": {
           "type": "boolean"
         },
-        "platform": {
+        "cmakeSourceDir": {
           "type": ["string", "null"]
         },
-        "configuration": {
+        "cmakeBuildDir": {
           "type": ["string", "null"]
+        },
+        "cmakePreset": {
+          "type": ["string", "null"]
+        },
+        "cmakeOptions": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "buildConfig": {
+          "type": ["string", "null"]
+        },
+        "autoDetectVcpkg": {
+          "type": "boolean"
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        },
+        "artifactPatterns": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "customCommands": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "rustBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cargoManifestDir": {
+          "type": ["string", "null"]
+        },
+        "profile": {
+          "type": ["string", "null"]
+        },
+        "features": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetTriple": {
+          "type": ["string", "null"]
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        },
+        "artifactPatterns": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "goBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "goModuleDir": {
+          "type": ["string", "null"]
+        },
+        "buildFlags": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputBinary": {
+          "type": ["string", "null"]
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        },
+        "envVars": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
     "unityBuild": {
       "type": "object",
       "properties": {
-        "enabled": {
+        "targetFramework": {
+          "type": ["string", "null"]
+        },
+        "unityProjectRoot": {
+          "type": ["string", "null"]
+        },
+        "packages": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/$defs/unityPackageMapping"
+          }
+        }
+      }
+    },
+    "unityPackageMapping": {
+      "type": "object",
+      "properties": {
+        "packageName": {
+          "type": ["string", "null"]
+        },
+        "scopedIndex": {
+          "type": ["string", "null"]
+        },
+        "sourceProjects": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceProjectGlobs": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencyDlls": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "enableCache": {
           "type": "boolean"
         },
-        "projectPath": {
+        "cacheDir": {
           "type": ["string", "null"]
         },
-        "buildTarget": {
+        "enableChangeDetection": {
+          "type": "boolean"
+        },
+        "distributedCacheUrl": {
+          "type": ["string", "null"],
+          "description": "Base URL for distributed cache server. Cache entries are uploaded/downloaded via HTTP PUT/GET."
+        },
+        "maxParallelism": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Maximum degree of parallelism for building independent project groups. Defaults to processor count."
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "enableMetrics": {
+          "type": "boolean"
+        },
+        "metricsOutputDir": {
           "type": ["string", "null"]
+        },
+        "metricsFormat": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["json", "csv"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "enableTelemetry": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable anonymous local-only telemetry collection. Disabled by default."
+        }
+      }
+    },
+    "packageManagement": {
+      "type": "object",
+      "properties": {
+        "registries": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/$defs/nugetRegistry"
+          }
+        },
+        "signing": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/packageSigning"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sbom": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sbomConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/retentionPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "nugetRegistry": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "apiKeyEnvVar": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["name", "url"]
+    },
+    "packageSigning": {
+      "type": "object",
+      "properties": {
+        "certificatePath": {
+          "type": ["string", "null"]
+        },
+        "certificatePasswordEnvVar": {
+          "type": ["string", "null"]
+        },
+        "timestampUrl": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "sbomConfig": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["spdx", "cyclonedx"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "retentionPolicy": {
+      "type": "object",
+      "properties": {
+        "maxVersions": {
+          "type": ["integer", "null"]
+        },
+        "maxAgeDays": {
+          "type": ["integer", "null"]
+        },
+        "localFeedPath": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "extensions": {
+      "type": "object",
+      "description": "Configuration for loading custom component plugins from external assemblies.",
+      "properties": {
+        "pluginPaths": {
+          "type": ["array", "null"],
+          "description": "Paths to plugin assemblies (.dll) or directories containing plugin assemblies, relative to repo root.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "autoLoadPlugins": {
+          "type": "boolean",
+          "default": false,
+          "description": "Automatically discover and load plugins from the default plugin directory (build/plugins/)."
         }
       }
     }
