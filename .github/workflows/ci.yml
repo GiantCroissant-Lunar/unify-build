@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  commit-lint:
+    name: Validate PR Title
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check conventional commit format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          PATTERN='^(feat|fix|docs|chore|refactor|perf|test|ci|build|style)(\(.+\))?!?: .+'
+          if [[ ! "$PR_TITLE" =~ $PATTERN ]]; then
+            echo "::error::PR title does not follow conventional commit format."
+            echo ""
+            echo "Expected: type(scope): description"
+            echo "  Types: feat, fix, docs, chore, refactor, perf, test, ci, build, style"
+            echo "  Example: feat(config): add support for Rust builds"
+            echo ""
+            echo "Got: $PR_TITLE"
+            exit 1
+          fi
+          echo "PR title follows conventional commit format."
+
+  build:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+        working-directory: dotnet
+
+      - name: Compile
+        run: dotnet build --no-restore --configuration Release
+        working-directory: dotnet
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+        working-directory: dotnet
+
+      - name: Check for vulnerable packages
+        run: |
+          dotnet list package --vulnerable --include-transitive 2>&1 | tee vulnerability-report.txt
+          if grep -qi "critical\|high" vulnerability-report.txt; then
+            echo "::error::Critical or high severity vulnerabilities found"
+            exit 1
+          fi
+        working-directory: dotnet
+
+      - name: Check dependency licenses
+        if: runner.os == 'Linux'
+        continue-on-error: true
+        run: |
+          echo "Scanning dependency licenses..."
+          # List all packages including transitive dependencies
+          dotnet list package --include-transitive --format json > license-report.json 2>/dev/null || true
+
+          # Define incompatible license patterns (copyleft licenses)
+          INCOMPATIBLE_LICENSES="GPL|AGPL|SSPL|GPL-2.0|GPL-3.0|AGPL-3.0|LGPL-2.0|LGPL-2.1|LGPL-3.0"
+
+          # Check for packages with known incompatible licenses
+          FOUND_ISSUES=0
+          if [ -f license-report.json ] && [ -s license-report.json ]; then
+            # Extract package names from the JSON output
+            PACKAGES=$(grep -oP '"id"\s*:\s*"\K[^"]+' license-report.json | sort -u)
+            for PKG in $PACKAGES; do
+              # Check each package's license expression using NuGet metadata
+              LICENSE_INFO=$(dotnet nuget locals global-packages -l 2>/dev/null | grep -oP '(?<=: ).*' | head -1)
+              if [ -n "$LICENSE_INFO" ]; then
+                PKG_DIR=$(find "$LICENSE_INFO" -maxdepth 2 -iname "$PKG" -type d 2>/dev/null | head -1)
+                if [ -n "$PKG_DIR" ]; then
+                  NUSPEC=$(find "$PKG_DIR" -name "*.nuspec" 2>/dev/null | head -1)
+                  if [ -n "$NUSPEC" ]; then
+                    LICENSE=$(grep -oP '<license[^>]*>\K[^<]+' "$NUSPEC" 2>/dev/null || grep -oP '<licenseUrl>\K[^<]+' "$NUSPEC" 2>/dev/null || echo "")
+                    if echo "$LICENSE" | grep -qiE "$INCOMPATIBLE_LICENSES"; then
+                      echo "::warning::Package '$PKG' has a potentially incompatible license: $LICENSE"
+                      FOUND_ISSUES=$((FOUND_ISSUES + 1))
+                    fi
+                  fi
+                fi
+              fi
+            done
+          fi
+
+          if [ "$FOUND_ISSUES" -gt 0 ]; then
+            echo "::warning::Found $FOUND_ISSUES package(s) with potentially incompatible licenses. Review the warnings above."
+          else
+            echo "No incompatible licenses detected."
+          fi
+        working-directory: dotnet
+
+      - name: Validate schema
+        run: dotnet build --no-restore --configuration Release -t:ValidateSchema
+        working-directory: dotnet
+
+      - name: Lint
+        run: dotnet format --verify-no-changes --verbosity diagnostic
+        working-directory: dotnet

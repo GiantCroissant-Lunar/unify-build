@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, Pack & Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup GitVersion
+        uses: gitversion/setup@v1
+        with:
+          versionSpec: '6.x'
+
+      - name: Execute GitVersion
+        id: gitversion
+        uses: gitversion/execute@v1
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Build.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore
+        working-directory: dotnet
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release /p:Version=${{ steps.gitversion.outputs.majorMinorPatch }}
+        working-directory: dotnet
+
+      - name: Test
+        run: dotnet test --no-build --configuration Release --verbosity normal
+        working-directory: dotnet
+
+      - name: Pack
+        run: |
+          dotnet pack src/UnifyBuild.Nuke/UnifyBuild.Nuke.csproj \
+            --no-build --configuration Release \
+            /p:PackageVersion=${{ steps.gitversion.outputs.majorMinorPatch }} \
+            --output ./artifacts
+
+          dotnet pack src/UnifyBuild.Tool/UnifyBuild.Tool.csproj \
+            --no-build --configuration Release \
+            /p:PackageVersion=${{ steps.gitversion.outputs.majorMinorPatch }} \
+            --output ./artifacts
+        working-directory: dotnet
+
+      - name: Publish to NuGet.org
+        run: |
+          dotnet nuget push ./artifacts/*.nupkg \
+            --api-key ${{ secrets.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json \
+            --skip-duplicate
+        working-directory: dotnet
+
+      - name: Install SBOM tool
+        run: dotnet tool install --global Microsoft.Sbom.DotNetTool
+
+      - name: Generate SBOM
+        run: |
+          sbom-tool generate \
+            -b ./artifacts \
+            -bc ./src \
+            -pn UnifyBuild \
+            -pv ${{ steps.gitversion.outputs.majorMinorPatch }} \
+            -ps plate \
+            -nsb https://github.com/${{ github.repository }}
+        working-directory: dotnet
+
+      - name: Generate release changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Update CHANGELOG.md
+        uses: orhun/git-cliff-action@v3
+        with:
+          config: cliff.toml
+          args: --tag ${{ github.ref_name }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Commit CHANGELOG.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No changelog changes to commit."
+          else
+            git commit -m "docs: update CHANGELOG.md for ${{ github.ref_name }}"
+            git push origin HEAD:main
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: CHANGES.md
+          files: |
+            dotnet/artifacts/*.nupkg
+            dotnet/artifacts/_manifest/spdx_2.2/manifest.spdx.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
