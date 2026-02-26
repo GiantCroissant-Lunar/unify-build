@@ -1,0 +1,62 @@
+site_name: UnifyBuild
+site_description: .NET build orchestration system built on NUKE
+site_url: https://your-org.github.io/unify-build/
+repo_url: https://github.com/your-org/unify-build
+repo_name: your-org/unify-build
+
+docs_dir: docs
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration:
+      - Configuration Reference: configuration-reference.md
+      - Caching: caching.md
+  - Examples:
+      - .NET Library: examples/dotnet-library.md
+      - .NET Application: examples/dotnet-application.md
+      - Native Build (CMake): examples/native-build.md
+      - Unity Build: examples/unity-build.md
+  - Migration Guide: migration-guide.md
+  - Architecture: architecture.md
+  - Telemetry: telemetry.md
+  - Contributing: contributing.md
+  - Troubleshooting: troubleshooting.md
