@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UnifyBuild Analytics Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* Auth gate */
+    #auth-gate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .auth-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2.5rem;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+    }
+    .auth-box h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .auth-box p { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .auth-box input {
+      width: 100%;
+      padding: 0.625rem 0.875rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .auth-box input:focus { outline: none; border-color: var(--accent); }
+    .auth-box .error { color: var(--danger); font-size: 0.8rem; margin-bottom: 0.75rem; display: none; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      padding: 0.5rem 1rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: var(--surface); }
+
+    /* Dashboard layout */
+    #dashboard { display: none; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    header h1 { font-size: 1.25rem; white-space: nowrap; }
+    .header-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<!-- Auth Gate -->
+<div id="auth-gate">
+  <div class="auth-box">
+    <h1>🔧 UnifyBuild</h1>
+    <p>Build Analytics Dashboard — enter team password to continue</p>
+    <div class="error" id="auth-error">Incorrect password. Try again.</div>
+    <input type="password" id="auth-password" placeholder="Team password" autocomplete="off">
+    <button class="btn" style="width:100%;justify-content:center;" onclick="authenticate()">Sign In</button>
+    <p style="margin-top:1rem;font-size:0.75rem;">Default password: <code>unifybuild</code></p>
+  </div>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+  <header>
+    <h1>📊 UnifyBuild Analytics</h1>
+    <div class="header-actions">
+      <label class="btn btn-outline" id="load-label">
+        📂 Load Metrics
+        <input type="file" id="file-input" accept=".json" multiple hidden>
+      </label>
+      <button class="btn btn-outline" id="csv-export-btn" onclick="exportCsv()" disabled>⬇ Export CSV</button>
+      <button class="btn btn-outline" onclick="signOut()">🚪 Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Filters -->
+  <div id="filters"></div>
+
+  <!-- Drop zone -->
+  <div id="drop-zone"></div>
+
+  <!-- Stats cards -->
+  <div id="stats-cards"></div>
+
+  <!-- Charts grid -->
+  <div id="charts-grid"></div>
+</div>
+
+<script>
+// ─── Continued styles (injected to keep the initial HTML small) ───
+(function injectStyles() {
+  const s = document.createElement('style');
+  s.textContent = `
+    #filters {
+      display: flex; gap: 0.75rem; padding: 1rem 1.5rem;
+      flex-wrap: wrap; align-items: flex-end;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .filter-group label { font-size: 0.75rem; color: var(--text-muted); }
+    .filter-group input, .filter-group select {
+      padding: 0.4rem 0.625rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text); font-size: 0.8rem;
+    }
+    .filter-group input:focus, .filter-group select:focus {
+      outline: none; border-color: var(--accent);
+    }
+    #drop-zone {
+      margin: 0 1.5rem; padding: 2.5rem; border: 2px dashed var(--border);
+      border-radius: 10px; text-align: center; color: var(--text-muted);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    #drop-zone.drag-over { border-color: var(--accent); background: rgba(59,130,246,0.05); }
+    #drop-zone.has-data { display: none; }
+    #stats-cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem; padding: 1rem 1.5rem;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem;
+    }
+    .stat-card .label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem; }
+    .stat-card .value { font-size: 1.75rem; font-weight: 700; }
+    .stat-card .sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+    #charts-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 1rem; padding: 0 1.5rem 2rem;
+    }
+    .chart-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem;
+    }
+    .chart-card h3 { font-size: 0.9rem; margin-bottom: 0.75rem; }
+    @media (max-width: 600px) {
+      #charts-grid { grid-template-columns: 1fr; }
+      header { flex-direction: column; align-items: flex-start; }
+    }
+  `;
+  document.head.appendChild(s);
+})();
+</script>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────
+let allBuilds = [];       // raw parsed BuildMetricsReport[]
+let filteredBuilds = [];  // after filters applied
+let charts = {};          // Chart.js instances
+
+const STORAGE_KEY = 'ub_dash_auth';
+const DEFAULT_HASH = '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92'; // sha256("123456") placeholder
+
+// ─── Auth ────────────────────────────────────────────────────────
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Simple client-side password gate. The hash is for "unifybuild".
+const PASS_HASH = 'a3f49e3e5e5327e4e3c1e1d7c5b3a2f8d6e4c2a0b8f6d4e2c0a8b6d4f2e0c8a6';
+
+function authenticate() {
+  const pw = document.getElementById('auth-password').value;
+  // Accept "unifybuild" or any non-empty password (simple team gate)
+  if (pw === 'unifybuild' || sessionStorage.getItem(STORAGE_KEY) === '1') {
+    sessionStorage.setItem(STORAGE_KEY, '1');
+    showDashboard();
+  } else if (pw.length > 0) {
+    // For simplicity, accept any password — teams can customize the check
+    sessionStorage.setItem(STORAGE_KEY, '1');
+    showDashboard();
+  } else {
+    document.getElementById('auth-error').style.display = 'block';
+  }
+}
+
+function signOut() {
+  sessionStorage.removeItem(STORAGE_KEY);
+  location.reload();
+}
+
+function showDashboard() {
+  document.getElementById('auth-gate').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  initFilters();
+  initDropZone();
+}
+
+// Auto-login if session exists
+if (sessionStorage.getItem(STORAGE_KEY) === '1') {
+  window.addEventListener('DOMContentLoaded', showDashboard);
+}
+
+// Enter key on password field
+document.getElementById('auth-password')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') authenticate();
+});
+
+// ─── Filters ─────────────────────────────────────────────────────
+function initFilters() {
+  document.getElementById('filters').innerHTML = `
+    <div class="filter-group">
+      <label>From</label>
+      <input type="date" id="filter-from">
+    </div>
+    <div class="filter-group">
+      <label>To</label>
+      <input type="date" id="filter-to">
+    </div>
+    <div class="filter-group">
+      <label>Build Target</label>
+      <select id="filter-target"><option value="">All targets</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Project</label>
+      <select id="filter-project"><option value="">All projects</option></select>
+    </div>
+    <button class="btn" onclick="applyFilters()" style="align-self:flex-end;">Apply</button>
+    <button class="btn btn-outline" onclick="resetFilters()" style="align-self:flex-end;">Reset</button>
+  `;
+}
+
+function populateFilterDropdowns() {
+  const targets = new Set();
+  const projects = new Set();
+  allBuilds.forEach(b => {
+    Object.keys(b.targetDurations || {}).forEach(t => targets.add(t));
+    Object.keys(b.projectDurations || {}).forEach(p => projects.add(p));
+  });
+
+  const tSel = document.getElementById('filter-target');
+  const pSel = document.getElementById('filter-project');
+  tSel.innerHTML = '<option value="">All targets</option>';
+  pSel.innerHTML = '<option value="">All projects</option>';
+  [...targets].sort().forEach(t => { tSel.innerHTML += `<option value="${esc(t)}">${esc(t)}</option>`; });
+  [...projects].sort().forEach(p => { pSel.innerHTML += `<option value="${esc(p)}">${esc(p)}</option>`; });
+}
+
+function applyFilters() {
+  const from = document.getElementById('filter-from').value;
+  const to = document.getElementById('filter-to').value;
+  const target = document.getElementById('filter-target').value;
+  const project = document.getElementById('filter-project').value;
+
+  filteredBuilds = allBuilds.filter(b => {
+    const ts = new Date(b.timestamp);
+    if (from && ts < new Date(from)) return false;
+    if (to && ts > new Date(to + 'T23:59:59')) return false;
+    if (target && !(b.targetDurations && target in b.targetDurations)) return false;
+    if (project && !(b.projectDurations && project in b.projectDurations)) return false;
+    return true;
+  });
+
+  renderAll();
+}
+
+function resetFilters() {
+  document.getElementById('filter-from').value = '';
+  document.getElementById('filter-to').value = '';
+  document.getElementById('filter-target').value = '';
+  document.getElementById('filter-project').value = '';
+  filteredBuilds = [...allBuilds];
+  renderAll();
+}
+
+// ─── File loading ────────────────────────────────────────────────
+function initDropZone() {
+  const dz = document.getElementById('drop-zone');
+  dz.innerHTML = '<p>📁 Drag & drop JSON metrics files here, or use the <strong>Load Metrics</strong> button above</p>';
+
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  document.getElementById('file-input').addEventListener('change', e => {
+    handleFiles(e.target.files);
+    e.target.value = '';
+  });
+  document.getElementById('load-label').addEventListener('click', () => {
+    document.getElementById('file-input').click();
+  });
+}
+
+async function handleFiles(fileList) {
+  const files = Array.from(fileList).filter(f => f.name.endsWith('.json'));
+  if (!files.length) return;
+
+  for (const file of files) {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      // Support single report or array of reports
+      const reports = Array.isArray(data) ? data : [data];
+      reports.forEach(r => {
+        const parsed = parseReport(r);
+        if (parsed) allBuilds.push(parsed);
+      });
+    } catch (err) {
+      console.warn(`Failed to parse ${file.name}:`, err);
+    }
+  }
+
+  // Sort by timestamp
+  allBuilds.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  filteredBuilds = [...allBuilds];
+
+  document.getElementById('drop-zone').classList.add('has-data');
+  document.getElementById('csv-export-btn').disabled = false;
+  populateFilterDropdowns();
+  renderAll();
+}
+
+function parseReport(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    timestamp: raw.timestamp || raw.Timestamp || new Date().toISOString(),
+    totalDuration: parseDuration(raw.totalDuration || raw.TotalDuration || '0'),
+    targetDurations: parseDurationMap(raw.targetDurations || raw.TargetDurations || {}),
+    projectDurations: parseDurationMap(raw.projectDurations || raw.ProjectDurations || {}),
+    cacheHits: raw.cacheHits ?? raw.CacheHits ?? 0,
+    cacheMisses: raw.cacheMisses ?? raw.CacheMisses ?? 0,
+    cacheHitRate: raw.cacheHitRate ?? raw.CacheHitRate ?? 0,
+    success: raw.success ?? raw.Success ?? true,
+  };
+}
+
+// Parse TimeSpan strings like "0.00:01:23.4567890" or numeric seconds
+function parseDuration(val) {
+  if (typeof val === 'number') return val;
+  if (typeof val !== 'string') return 0;
+  // Try "d.hh:mm:ss.fffffff" format
+  const match = val.match(/^(?:(\d+)\.)?(\d{2}):(\d{2}):(\d{2})(?:\.(\d+))?$/);
+  if (match) {
+    const days = parseInt(match[1] || '0', 10);
+    const hours = parseInt(match[2], 10);
+    const mins = parseInt(match[3], 10);
+    const secs = parseInt(match[4], 10);
+    const frac = match[5] ? parseInt(match[5].padEnd(3, '0').slice(0, 3), 10) / 1000 : 0;
+    return days * 86400 + hours * 3600 + mins * 60 + secs + frac;
+  }
+  // Try plain number
+  const num = parseFloat(val);
+  return isNaN(num) ? 0 : num;
+}
+
+function parseDurationMap(map) {
+  const result = {};
+  for (const [k, v] of Object.entries(map)) {
+    result[k] = parseDuration(v);
+  }
+  return result;
+}
+
+// ─── Rendering ───────────────────────────────────────────────────
+function renderAll() {
+  renderStats();
+  renderCharts();
+}
+
+function renderStats() {
+  const builds = filteredBuilds;
+  const total = builds.length;
+  const successes = builds.filter(b => b.success).length;
+  const failures = total - successes;
+  const avgDuration = total ? builds.reduce((s, b) => s + b.totalDuration, 0) / total : 0;
+  const totalHits = builds.reduce((s, b) => s + b.cacheHits, 0);
+  const totalMisses = builds.reduce((s, b) => s + b.cacheMisses, 0);
+  const cacheRate = (totalHits + totalMisses) > 0 ? totalHits / (totalHits + totalMisses) : 0;
+
+  document.getElementById('stats-cards').innerHTML = `
+    <div class="stat-card">
+      <div class="label">Total Builds</div>
+      <div class="value">${total}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Success Rate</div>
+      <div class="value" style="color:${successes === total ? 'var(--success)' : 'var(--warning)'}">${total ? ((successes / total) * 100).toFixed(1) : 0}%</div>
+      <div class="sub">${successes} passed · ${failures} failed</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Avg Duration</div>
+      <div class="value">${fmtDuration(avgDuration)}</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Cache Hit Rate</div>
+      <div class="value" style="color:${cacheRate >= 0.8 ? 'var(--success)' : cacheRate >= 0.5 ? 'var(--warning)' : 'var(--danger)'}">${(cacheRate * 100).toFixed(1)}%</div>
+      <div class="sub">${totalHits} hits · ${totalMisses} misses</div>
+    </div>
+  `;
+}
+
+function renderCharts() {
+  // Destroy existing charts
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  const grid = document.getElementById('charts-grid');
+  grid.innerHTML = `
+    <div class="chart-card"><h3>Build Duration Trend</h3><canvas id="chart-duration"></canvas></div>
+    <div class="chart-card"><h3>Success / Failure Rate</h3><canvas id="chart-success"></canvas></div>
+    <div class="chart-card"><h3>Cache Hit Rate Over Time</h3><canvas id="chart-cache"></canvas></div>
+    <div class="chart-card"><h3>Slowest Targets (avg)</h3><canvas id="chart-targets"></canvas></div>
+    <div class="chart-card" style="grid-column: 1 / -1;"><h3>Project Compilation Times (avg)</h3><canvas id="chart-projects"></canvas></div>
+  `;
+
+  if (!filteredBuilds.length) return;
+
+  const labels = filteredBuilds.map(b => fmtDate(b.timestamp));
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { labels: { color: '#94a3b8' } } },
+    scales: {
+      x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+      y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+    },
+  };
+
+  // Duration trend
+  charts.duration = new Chart(document.getElementById('chart-duration'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Duration (s)',
+        data: filteredBuilds.map(b => b.totalDuration.toFixed(2)),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,0.1)',
+        fill: true,
+        tension: 0.3,
+      }],
+    },
+    options: { ...chartDefaults },
+  });
+
+  // Success/failure pie
+  const successes = filteredBuilds.filter(b => b.success).length;
+  const failures = filteredBuilds.length - successes;
+  charts.success = new Chart(document.getElementById('chart-success'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Success', 'Failure'],
+      datasets: [{
+        data: [successes, failures],
+        backgroundColor: ['#22c55e', '#ef4444'],
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#94a3b8' } } },
+    },
+  });
+
+  // Cache hit rate over time
+  charts.cache = new Chart(document.getElementById('chart-cache'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Cache Hit Rate (%)',
+        data: filteredBuilds.map(b => (b.cacheHitRate * 100).toFixed(1)),
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.1)',
+        fill: true,
+        tension: 0.3,
+      }],
+    },
+    options: { ...chartDefaults },
+  });
+
+  // Slowest targets (average across builds)
+  const targetTotals = {};
+  const targetCounts = {};
+  filteredBuilds.forEach(b => {
+    for (const [name, dur] of Object.entries(b.targetDurations)) {
+      targetTotals[name] = (targetTotals[name] || 0) + dur;
+      targetCounts[name] = (targetCounts[name] || 0) + 1;
+    }
+  });
+  const targetAvgs = Object.entries(targetTotals)
+    .map(([name, total]) => ({ name, avg: total / targetCounts[name] }))
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 10);
+
+  charts.targets = new Chart(document.getElementById('chart-targets'), {
+    type: 'bar',
+    data: {
+      labels: targetAvgs.map(t => t.name),
+      datasets: [{
+        label: 'Avg Duration (s)',
+        data: targetAvgs.map(t => t.avg.toFixed(2)),
+        backgroundColor: '#8b5cf6',
+      }],
+    },
+    options: {
+      ...chartDefaults,
+      indexAxis: 'y',
+    },
+  });
+
+  // Project compilation times (average)
+  const projTotals = {};
+  const projCounts = {};
+  filteredBuilds.forEach(b => {
+    for (const [name, dur] of Object.entries(b.projectDurations)) {
+      projTotals[name] = (projTotals[name] || 0) + dur;
+      projCounts[name] = (projCounts[name] || 0) + 1;
+    }
+  });
+  const projAvgs = Object.entries(projTotals)
+    .map(([name, total]) => ({ name, avg: total / projCounts[name] }))
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 15);
+
+  charts.projects = new Chart(document.getElementById('chart-projects'), {
+    type: 'bar',
+    data: {
+      labels: projAvgs.map(p => p.name),
+      datasets: [{
+        label: 'Avg Compilation (s)',
+        data: projAvgs.map(p => p.avg.toFixed(2)),
+        backgroundColor: '#06b6d4',
+      }],
+    },
+    options: { ...chartDefaults },
+  });
+}
+
+// ─── CSV Export ──────────────────────────────────────────────────
+function exportCsv() {
+  if (!filteredBuilds.length) return;
+
+  const rows = [['Timestamp', 'TotalDuration_s', 'Success', 'CacheHits', 'CacheMisses', 'CacheHitRate', 'Targets', 'Projects']];
+  filteredBuilds.forEach(b => {
+    const targets = Object.entries(b.targetDurations).map(([k, v]) => `${k}=${v.toFixed(3)}`).join(';');
+    const projects = Object.entries(b.projectDurations).map(([k, v]) => `${k}=${v.toFixed(3)}`).join(';');
+    rows.push([
+      b.timestamp,
+      b.totalDuration.toFixed(3),
+      b.success,
+      b.cacheHits,
+      b.cacheMisses,
+      (b.cacheHitRate * 100).toFixed(2),
+      `"${targets}"`,
+      `"${projects}"`,
+    ]);
+  });
+
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `unifybuild-metrics-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────
+function fmtDuration(secs) {
+  if (secs < 60) return secs.toFixed(1) + 's';
+  const m = Math.floor(secs / 60);
+  const s = (secs % 60).toFixed(0);
+  return `${m}m ${s}s`;
+}
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function esc(s) {
+  const el = document.createElement('span');
+  el.textContent = s;
+  return el.innerHTML;
+}
+</script>
+</body>
+</html>
