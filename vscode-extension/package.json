@@ -1,0 +1,94 @@
+{
+  "name": "unifybuild",
+  "displayName": "UnifyBuild",
+  "description": "VS Code extension for UnifyBuild .NET build orchestration system. Provides IntelliSense, snippets, tree view, and command integration for build.config.json.",
+  "version": "0.1.0",
+  "publisher": "unifybuild",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "dotnet",
+    "build",
+    "nuke",
+    "cmake",
+    "unity"
+  ],
+  "activationEvents": [
+    "workspaceContains:**/build.config.json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "unifybuild.init",
+        "title": "UnifyBuild: Init",
+        "category": "UnifyBuild",
+        "icon": "$(add)"
+      },
+      {
+        "command": "unifybuild.validate",
+        "title": "UnifyBuild: Validate Config",
+        "category": "UnifyBuild",
+        "icon": "$(check)"
+      },
+      {
+        "command": "unifybuild.doctor",
+        "title": "UnifyBuild: Doctor",
+        "category": "UnifyBuild",
+        "icon": "$(heart)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "unifybuildProjects",
+          "name": "UnifyBuild Projects",
+          "when": "unifybuild.configFound"
+        }
+      ]
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "build.config.json",
+        "url": "./schemas/build.config.schema.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "json",
+        "path": "./src/snippets.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "json",
+        "filenames": [
+          "build.config.json"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^2.22.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unifybuild/unifybuild"
+  }
+}

@@ -1,0 +1,442 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": ["string", "null"]
+    },
+    "versionEnv": {
+      "type": ["string", "null"]
+    },
+    "artifactsVersion": {
+      "type": ["string", "null"]
+    },
+    "solution": {
+      "type": ["string", "null"]
+    },
+    "projectGroups": {
+      "type": ["object", "null"],
+      "additionalProperties": {
+        "$ref": "#/$defs/projectGroup"
+      }
+    },
+    "compileProjects": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "publishProjects": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "packProjects": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "nativeBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/nativeBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rustBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/rustBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "goBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/goBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unityBuild": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/unityBuild"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "performance": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/performance"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observability": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/observability"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "packageManagement": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/packageManagement"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "projectGroup": {
+      "type": "object",
+      "properties": {
+        "sourceDir": {
+          "type": ["string", "null"]
+        },
+        "action": {
+          "type": ["string", "null"]
+        },
+        "include": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "exclude": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "nativeBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cmakeSourceDir": {
+          "type": ["string", "null"]
+        },
+        "cmakeBuildDir": {
+          "type": ["string", "null"]
+        },
+        "cmakePreset": {
+          "type": ["string", "null"]
+        },
+        "cmakeOptions": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "buildConfig": {
+          "type": ["string", "null"]
+        },
+        "autoDetectVcpkg": {
+          "type": "boolean"
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        },
+        "artifactPatterns": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "customCommands": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "rustBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cargoManifestDir": {
+          "type": ["string", "null"]
+        },
+        "profile": {
+          "type": ["string", "null"]
+        },
+        "features": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetTriple": {
+          "type": ["string", "null"]
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        },
+        "artifactPatterns": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "goBuild": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "goModuleDir": {
+          "type": ["string", "null"]
+        },
+        "buildFlags": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputBinary": {
+          "type": ["string", "null"]
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        },
+        "envVars": {
+          "anyOf": [
+            {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "unityBuild": {
+      "type": "object",
+      "properties": {
+        "targetFramework": {
+          "type": ["string", "null"]
+        },
+        "unityProjectRoot": {
+          "type": ["string", "null"]
+        },
+        "packages": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/$defs/unityPackageMapping"
+          }
+        }
+      }
+    },
+    "unityPackageMapping": {
+      "type": "object",
+      "properties": {
+        "packageName": {
+          "type": ["string", "null"]
+        },
+        "scopedIndex": {
+          "type": ["string", "null"]
+        },
+        "sourceProjects": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "sourceProjectGlobs": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        },
+        "dependencyDlls": {
+          "type": ["array", "null"],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "performance": {
+      "type": "object",
+      "properties": {
+        "enableCache": {
+          "type": "boolean"
+        },
+        "cacheDir": {
+          "type": ["string", "null"]
+        },
+        "enableChangeDetection": {
+          "type": "boolean"
+        }
+      }
+    },
+    "observability": {
+      "type": "object",
+      "properties": {
+        "enableMetrics": {
+          "type": "boolean"
+        },
+        "metricsOutputDir": {
+          "type": ["string", "null"]
+        },
+        "metricsFormat": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["json", "csv"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "enableTelemetry": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable anonymous local-only telemetry collection. Disabled by default."
+        }
+      }
+    },
+    "packageManagement": {
+      "type": "object",
+      "properties": {
+        "registries": {
+          "type": ["array", "null"],
+          "items": {
+            "$ref": "#/$defs/nugetRegistry"
+          }
+        },
+        "signing": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/packageSigning"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sbom": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/sbomConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "retention": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/retentionPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "nugetRegistry": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "apiKeyEnvVar": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["name", "url"]
+    },
+    "packageSigning": {
+      "type": "object",
+      "properties": {
+        "certificatePath": {
+          "type": ["string", "null"]
+        },
+        "certificatePasswordEnvVar": {
+          "type": ["string", "null"]
+        },
+        "timestampUrl": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "sbomConfig": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": ["spdx", "cyclonedx"]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "outputDir": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "retentionPolicy": {
+      "type": "object",
+      "properties": {
+        "maxVersions": {
+          "type": ["integer", "null"]
+        },
+        "maxAgeDays": {
+          "type": ["integer", "null"]
+        },
+        "localFeedPath": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "UnifyBuild Config": {
+    "prefix": "unifybuild-config",
+    "body": [
+      "{",
+      "  \"\\$schema\": \"./build.config.schema.json\",",
+      "  \"solution\": \"${1:MySolution.sln}\",",
+      "  \"projectGroups\": {",
+      "    \"${2:libraries}\": {",
+      "      \"sourceDir\": \"${3:src}\",",
+      "      \"action\": \"${4|compile,pack,publish|}\",",
+      "      \"include\": [\"${5:*}\"]",
+      "    }",
+      "  }",
+      "}"
+    ],
+    "description": "Full build.config.json template for UnifyBuild"
+  },
+  "UnifyBuild Project Group": {
+    "prefix": "unifybuild-project-group",
+    "body": [
+      "\"${1:groupName}\": {",
+      "  \"sourceDir\": \"${2:src}\",",
+      "  \"action\": \"${3|compile,pack,publish|}\",",
+      "  \"include\": [\"${4:*}\"],",
+      "  \"exclude\": [${5}]",
+      "}"
+    ],
+    "description": "Project group entry for build.config.json"
+  },
+  "UnifyBuild Native Build": {
+    "prefix": "unifybuild-native-build",
+    "body": [
+      "\"nativeBuild\": {",
+      "  \"enabled\": true,",
+      "  \"cmakeSourceDir\": \"${1:native/src}\",",
+      "  \"cmakeBuildDir\": \"${2:native/build}\",",
+      "  \"buildConfig\": \"${3|Release,Debug,RelWithDebInfo,MinSizeRel|}\",",
+      "  \"outputDir\": \"${4:artifacts/native}\",",
+      "  \"artifactPatterns\": [\"${5:*.dll}\"]",
+      "}"
+    ],
+    "description": "Native CMake build configuration for build.config.json"
+  }
+}
