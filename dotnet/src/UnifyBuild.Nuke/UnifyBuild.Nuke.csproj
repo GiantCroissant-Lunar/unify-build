@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="NJsonSchema" Version="11.1.0" />
-    <PackageReference Include="Nuke.Common" Version="8.0.0" />
+    <PackageReference Include="Nuke.Common" Version="9.0.4" />
     <PackageReference Include="Spectre.Console" Version="0.50.0" />
   </ItemGroup>
 
