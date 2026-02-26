@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
@@ -31,6 +32,14 @@ public interface IUnifyNative : IUnifyBuildConfig
                 return;
             }
 
+            if (!IsPlatformMatch(nativeConfig.Platform))
+            {
+                Serilog.Log.Information(
+                    "Native build platform '{Platform}' does not match current OS. Skipping.",
+                    nativeConfig.Platform);
+                return;
+            }
+
             var cmakeListsPath = nativeConfig.CMakeSourceDir / "CMakeLists.txt";
             if (!File.Exists(cmakeListsPath))
             {
@@ -38,7 +47,12 @@ public interface IUnifyNative : IUnifyBuildConfig
                 return;
             }
 
-            var vcpkgToolchain = TryDetectVcpkgToolchain(UnifyConfig.RepoRoot);
+            // Execute custom pre-build commands
+            ExecuteCustomCommands(nativeConfig.CustomCommands, nativeConfig.CMakeSourceDir!);
+
+            var vcpkgToolchain = nativeConfig.AutoDetectVcpkg
+                ? TryDetectVcpkgToolchain(UnifyConfig.RepoRoot)
+                : null;
             var hasPreset = HasCMakePresets(nativeConfig.CMakeSourceDir, nativeConfig.CMakePreset);
 
             if (hasPreset && !string.IsNullOrEmpty(nativeConfig.CMakePreset))
@@ -53,16 +67,119 @@ public interface IUnifyNative : IUnifyBuildConfig
             CollectArtifacts(nativeConfig);
         });
 
+    private static bool IsPlatformMatch(string? platform)
+    {
+        if (string.IsNullOrEmpty(platform))
+            return true;
+
+        return platform.ToLowerInvariant() switch
+        {
+            "windows" => RuntimeInformation.IsOSPlatform(OSPlatform.Windows),
+            "linux" => RuntimeInformation.IsOSPlatform(OSPlatform.Linux),
+            "macos" or "osx" => RuntimeInformation.IsOSPlatform(OSPlatform.OSX),
+            _ => true
+        };
+    }
+
+    private static void ExecuteCustomCommands(string[] commands, AbsolutePath workingDir)
+    {
+        if (commands.Length == 0)
+            return;
+
+        foreach (var command in commands)
+        {
+            if (string.IsNullOrWhiteSpace(command))
+                continue;
+
+            Serilog.Log.Information("Executing custom command: {Command}", command);
+
+            string executable;
+            string arguments;
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                executable = "cmd";
+                arguments = $"/c {command}";
+            }
+            else
+            {
+                executable = "/bin/sh";
+                arguments = $"-c \"{command.Replace("\"", "\\\"")}\"";
+            }
+
+            ProcessTasks.StartProcess(executable, arguments, workingDir)
+                .AssertZeroExitCode();
+        }
+    }
+
     private bool HasCMakePresets(AbsolutePath sourceDir, string? presetName)
     {
         var presetsPath = sourceDir / "CMakePresets.json";
         return File.Exists(presetsPath);
     }
 
-    private string? TryDetectVcpkgToolchain(AbsolutePath repoRoot)
+    /// <summary>
+    /// Attempts to detect the vcpkg toolchain file by checking multiple locations:
+    /// 1. VCPKG_ROOT environment variable
+    /// 2. Repository-local vcpkg directory
+    /// 3. Common system install locations
+    /// </summary>
+    internal static string? TryDetectVcpkgToolchain(AbsolutePath repoRoot)
     {
-        var toolchainPath = repoRoot / "vcpkg" / "scripts" / "buildsystems" / "vcpkg.cmake";
-        return File.Exists(toolchainPath) ? toolchainPath : null;
+        // 1. Check VCPKG_ROOT environment variable
+        var vcpkgRoot = Environment.GetEnvironmentVariable("VCPKG_ROOT");
+        if (!string.IsNullOrEmpty(vcpkgRoot))
+        {
+            var envToolchain = Path.Combine(vcpkgRoot, "scripts", "buildsystems", "vcpkg.cmake");
+            if (File.Exists(envToolchain))
+            {
+                Serilog.Log.Debug("Detected vcpkg toolchain via VCPKG_ROOT: {Path}", envToolchain);
+                return envToolchain;
+            }
+        }
+
+        // 2. Check repo-local vcpkg directory (existing behavior)
+        var repoToolchain = repoRoot / "vcpkg" / "scripts" / "buildsystems" / "vcpkg.cmake";
+        if (File.Exists(repoToolchain))
+        {
+            Serilog.Log.Debug("Detected vcpkg toolchain in repo: {Path}", repoToolchain);
+            return repoToolchain;
+        }
+
+        // 3. Check common system install locations
+        var commonPaths = GetCommonVcpkgPaths();
+        foreach (var basePath in commonPaths)
+        {
+            var toolchain = Path.Combine(basePath, "scripts", "buildsystems", "vcpkg.cmake");
+            if (File.Exists(toolchain))
+            {
+                Serilog.Log.Debug("Detected vcpkg toolchain at common location: {Path}", toolchain);
+                return toolchain;
+            }
+        }
+
+        return null;
+    }
+
+    private static string[] GetCommonVcpkgPaths()
+    {
+        var paths = new List<string>();
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            paths.Add(@"C:\vcpkg");
+            paths.Add(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "vcpkg"));
+        }
+        else
+        {
+            paths.Add("/usr/local/share/vcpkg");
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            paths.Add(Path.Combine(home, ".vcpkg"));
+            paths.Add(Path.Combine(home, "vcpkg"));
+        }
+
+        return paths.ToArray();
     }
 
     private void BuildWithPreset(NativeBuildContext config, string? vcpkgToolchain)
@@ -94,7 +211,7 @@ public interface IUnifyNative : IUnifyBuildConfig
 
         // Configure
         var configureArgs = $"-S \"{config.CMakeSourceDir}\" -B \"{config.CMakeBuildDir}\" -DCMAKE_BUILD_TYPE={config.BuildConfig}";
-        
+
         if (!string.IsNullOrEmpty(vcpkgToolchain))
         {
             Serilog.Log.Information("Using vcpkg toolchain: {Path}", vcpkgToolchain);

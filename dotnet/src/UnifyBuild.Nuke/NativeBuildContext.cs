@@ -51,4 +51,15 @@ public sealed record NativeBuildContext
     /// File patterns to collect as artifacts (e.g., "*.dll", "*.so", "*.dylib").
     /// </summary>
     public string[] ArtifactPatterns { get; init; } = new[] { "*.dll", "*.so", "*.dylib", "*.lib", "*.a" };
+
+    /// <summary>
+    /// Custom commands to execute before and/or after the CMake build.
+    /// </summary>
+    public string[] CustomCommands { get; init; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Target platform for platform-specific configuration (e.g., "windows", "linux", "macos").
+    /// If null, the current OS platform is used.
+    /// </summary>
+    public string? Platform { get; init; }
 }
