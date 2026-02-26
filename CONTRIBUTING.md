@@ -44,6 +44,68 @@ loading utilities under `UnifyBuild.Nuke`.
 - Keep PRs **small and focused** when possible.
 - Describe the **motivation**, **approach**, and **any breaking changes**.
 - If you change build schema / build behavior, please update relevant docs under `docs/`.
+- PR titles **must** follow the conventional commit format (see below). CI will reject PRs with non-conforming titles.
+
+## Commit convention
+
+This project uses [Conventional Commits](https://www.conventionalcommits.org/) to
+drive automated changelog generation and semantic versioning.
+
+### Format
+
+```
+type(scope): description
+
+[optional body]
+
+[optional footer(s)]
+```
+
+### Types
+
+| Type       | Description                                          |
+|------------|------------------------------------------------------|
+| `feat`     | A new feature                                        |
+| `fix`      | A bug fix                                            |
+| `docs`     | Documentation only changes                           |
+| `refactor` | Code change that neither fixes a bug nor adds a feature |
+| `perf`     | A code change that improves performance              |
+| `test`     | Adding or updating tests                             |
+| `ci`       | Changes to CI configuration files and scripts        |
+| `build`    | Changes that affect the build system or dependencies |
+| `chore`    | Other changes that don't modify src or test files    |
+| `style`    | Code style changes (formatting, semicolons, etc.)    |
+
+### Scope (optional)
+
+A scope provides additional context, e.g. `feat(config): add Rust build support`.
+
+Common scopes: `config`, `cli`, `native`, `unity`, `docs`, `ci`, `schema`.
+
+### Breaking changes
+
+Indicate breaking changes by adding `!` after the type/scope or by including a
+`BREAKING CHANGE:` footer:
+
+```
+feat(config)!: remove deprecated v1 schema support
+
+BREAKING CHANGE: v1 build.config.json files are no longer supported.
+Run `dotnet unify-build migrate` to upgrade.
+```
+
+### Examples
+
+```
+feat(cli): add doctor command for config diagnostics
+fix(config): handle missing projectGroups gracefully
+docs: update getting-started guide with init command
+refactor(native): extract vcpkg detection into helper
+perf: cache project discovery results
+test: add property tests for schema validation
+ci: add commit message validation to PR checks
+chore: update NuGet dependencies
+```
 
 ## Code style
 
