@@ -19,6 +19,12 @@ repos:
 
   - repo: local
     hooks:
+      - id: dotnet-format
+        name: dotnet format
+        entry: dotnet format --verify-no-changes
+        language: system
+        types: [c#]
+        pass_filenames: false
       - id: repomix
         name: Generate repomix output
         entry: cmd /c npm run repomix
