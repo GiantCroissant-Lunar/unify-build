@@ -102,6 +102,11 @@ public sealed class BuildJsonConfig
     public UnityBuildJsonConfig? UnityBuild { get; set; }
 
     /// <summary>
+    /// Godot build configuration for exporting games.
+    /// </summary>
+    public GodotBuildConfig? GodotBuild { get; set; }
+
+    /// <summary>
     /// Advanced package management configuration (multi-registry push, signing, SBOM, retention).
     /// </summary>
     public PackageManagementConfig? PackageManagement { get; set; }
@@ -536,6 +541,64 @@ public sealed class UnityPackageMappingConfig
 }
 
 /// <summary>
+/// JSON configuration for Godot game exports.
+/// </summary>
+public sealed class GodotBuildConfig
+{
+    /// <summary>
+    /// Root directory of the Godot project containing project.godot.
+    /// </summary>
+    public string ProjectRoot { get; set; } = "";
+
+    /// <summary>
+    /// Name of the environment variable containing the path to the Godot executable.
+    /// Defaults to "GODOT".
+    /// </summary>
+    public string? ExecutablePathEnv { get; set; } = "GODOT";
+
+    /// <summary>
+    /// Explicit path to the Godot executable, overrides ExecutablePathEnv.
+    /// </summary>
+    public string? ExecutablePath { get; set; }
+
+    /// <summary>
+    /// The name of the central game assembly.
+    /// </summary>
+    public string? AssemblyName { get; set; }
+
+    /// <summary>
+    /// Platforms to export.
+    /// </summary>
+    public GodotExportPlatformConfig[]? Platforms { get; set; }
+}
+
+/// <summary>
+/// Platform configuration for Godot export.
+/// </summary>
+public sealed class GodotExportPlatformConfig
+{
+    /// <summary>
+    /// The .NET Runtime Identifier (RID) to publish for (e.g., win-x64, linux-x64, osx-universal).
+    /// </summary>
+    public string Rid { get; set; } = "";
+
+    /// <summary>
+    /// The Godot export preset name (e.g., "Windows Desktop", "Linux", "macOS").
+    /// </summary>
+    public string PresetName { get; set; } = "";
+
+    /// <summary>
+    /// The name of the binary file to export (e.g., "GiantIsopod.exe").
+    /// </summary>
+    public string BinaryName { get; set; } = "";
+
+    /// <summary>
+    /// The Godot data directory suffix. Can include {AssemblyName} placeholder.
+    /// </summary>
+    public string DataDirName { get; set; } = "";
+}
+
+/// <summary>
 /// Loader for build configuration using the generic project groups schema.
 /// </summary>
 public static class BuildContextLoader
@@ -701,10 +764,34 @@ public static class BuildContextLoader
             NativeBuild = CreateNativeBuildContext(repoRoot, cfg.NativeBuild, artifactsVersion),
             RustBuild = CreateRustBuildContext(repoRoot, cfg.RustBuild, artifactsVersion),
             GoBuild = CreateGoBuildContext(repoRoot, cfg.GoBuild, artifactsVersion),
-            UnityBuild = CreateUnityBuildContext(repoRoot, cfg.UnityBuild)
+            UnityBuild = CreateUnityBuildContext(repoRoot, cfg.UnityBuild),
+            GodotBuild = CreateGodotBuildContext(repoRoot, cfg.GodotBuild)
         };
 
         return context;
+    }
+
+    private static GodotBuildContext? CreateGodotBuildContext(AbsolutePath repoRoot, GodotBuildConfig? cfg)
+    {
+        if (cfg is null)
+            return null;
+
+        var platforms = cfg.Platforms?.Select(p => new GodotExportPlatformContext
+        {
+            Rid = p.Rid,
+            PresetName = p.PresetName,
+            BinaryName = p.BinaryName,
+            DataDirName = p.DataDirName
+        }).ToArray() ?? Array.Empty<GodotExportPlatformContext>();
+
+        return new GodotBuildContext
+        {
+            ProjectRoot = repoRoot / cfg.ProjectRoot,
+            ExecutablePathEnv = cfg.ExecutablePathEnv,
+            ExecutablePath = cfg.ExecutablePath,
+            AssemblyName = cfg.AssemblyName,
+            Platforms = platforms
+        };
     }
 
     private static NativeBuildContext? CreateNativeBuildContext(AbsolutePath repoRoot, NativeBuildConfig? cfg, string artifactsVersion)

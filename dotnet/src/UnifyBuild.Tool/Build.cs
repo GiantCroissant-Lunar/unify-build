@@ -13,7 +13,7 @@ namespace UnifyBuild.Tool;
 /// Entry point for the unify-build CLI tool.
 /// Composes all UnifyBuild components into a single NukeBuild class.
 /// </summary>
-class Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity
+class Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity, IUnifyGodot, IUnifySchemaGeneration
 {
     BuildContext IUnifyBuildConfig.UnifyConfig =>
         BuildContextLoader.FromJson(RootDirectory, "build.config.json");

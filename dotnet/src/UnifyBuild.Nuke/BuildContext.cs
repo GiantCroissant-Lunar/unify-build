@@ -80,4 +80,9 @@ public sealed record BuildContext
     /// Unity package build configuration for copying netstandard2.1 DLLs.
     /// </summary>
     public UnityBuildContext? UnityBuild { get; init; }
+
+    /// <summary>
+    /// Godot build configuration for exporting games.
+    /// </summary>
+    public GodotBuildContext? GodotBuild { get; init; }
 }

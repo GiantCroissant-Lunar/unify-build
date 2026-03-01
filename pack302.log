@@ -1,0 +1,55 @@
+​
+███╗   ██╗██╗   ██╗██╗  ██╗███████╗
+████╗  ██║██║   ██║██║ ██╔╝██╔════╝
+██╔██╗ ██║██║   ██║█████╔╝ █████╗  
+██║╚██╗██║██║   ██║██╔═██╗ ██╔══╝  
+██║ ╚████║╚██████╔╝██║  ██╗███████╗
+╚═╝  ╚═══╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+​
+NUKE Execution Engine version 8.0.0 (Windows,.NETCoreApp,Version=v8.0)
+​
+​
+╬════════════
+║ Compile
+╬═══
+​
+17:01:31 [INF] Loading build configuration
+​
+╬═════════
+║ Pack
+╬══
+​
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] Loading build configuration
+17:01:32 [INF] > "C:\Program Files\dotnet\dotnet.exe" pack C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Nuke\UnifyBuild.Nuke.csproj --configuration Release --include-symbols --no-restore --output C:\lunar-horse\plate-projects\unify-build\build\_artifacts\0.1.10\nuget /property:SymbolPackageFormat=snupkg /property:Version=3.0.1 /property:GeneratePackageOnBuild=false
+17:01:32 [DBG]   UnifyBuild.Nuke -> C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Nuke\bin\Release\UnifyBuild.Nuke.dll
+17:01:33 [INF] Loading build configuration
+17:01:33 [INF] Loading build configuration
+17:01:33 [INF] Loading build configuration
+17:01:33 [INF] Loading build configuration
+17:01:33 [INF] Loading build configuration
+17:01:33 [INF] > "C:\Program Files\dotnet\dotnet.exe" pack C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Tool\UnifyBuild.Tool.csproj --configuration Release --include-symbols --no-restore --output C:\lunar-horse\plate-projects\unify-build\build\_artifacts\0.1.10\nuget /property:SymbolPackageFormat=snupkg /property:Version=3.0.1 /property:GeneratePackageOnBuild=false
+17:01:33 [DBG]   UnifyBuild.Nuke -> C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Nuke\bin\Release\UnifyBuild.Nuke.dll
+17:01:33 [DBG]   UnifyBuild.Tool -> C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Tool\bin\Release\net8.0\UnifyBuild.Tool.dll
+17:01:34 [DBG]   UnifyBuild.Tool -> C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Tool\bin\Release\net8.0\UnifyBuild.Tool.dll
+17:01:34 [DBG]   UnifyBuild.Tool -> C:\lunar-horse\plate-projects\unify-build\dotnet\src\UnifyBuild.Tool\bin\Release\net8.0\publish\
+​
+════════════════════════════════════════════
+Target                  Status      Duration
+────────────────────────────────────────────
+InstallQuickTypeTool    Skipped                // Skipped: because of GenerateSchema
+GenerateSchema          Skipped                // Skipped: via parameter
+Compile                 Succeeded     < 1sec
+Pack                    Succeeded       0:02
+────────────────────────────────────────────
+Total                                   0:02
+════════════════════════════════════════════
+​
+Build succeeded on 2026/3/1 下午 05:01:34. ＼（＾ᴗ＾）／

@@ -14,6 +14,14 @@
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
         },
+        "Fix": {
+          "type": "boolean",
+          "description": "Auto-fix issues found by doctor"
+        },
+        "Force": {
+          "type": "boolean",
+          "description": "Force overwrite of existing build.config.json"
+        },
         "Help": {
           "type": "boolean",
           "description": "Shows the help text for this build assembly"
@@ -38,6 +46,10 @@
             "VisualStudio",
             "VSCode"
           ]
+        },
+        "Interactive": {
+          "type": "boolean",
+          "description": "Run init in interactive mode with step-by-step prompts"
         },
         "NoLogo": {
           "type": "boolean",
@@ -68,10 +80,16 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildForUnity",
+              "BuildGodot",
               "Compile",
               "CompileProjects",
+              "Doctor",
               "GenerateSchema",
+              "Init",
               "InstallQuickTypeTool",
+              "Migrate",
+              "Native",
               "Pack",
               "PackAll",
               "PackContracts",
@@ -79,7 +97,8 @@
               "PublishHosts",
               "PublishPlugins",
               "PublishProjects",
-              "SyncLatestArtifacts"
+              "SyncLatestArtifacts",
+              "Validate"
             ]
           }
         },
@@ -89,10 +108,16 @@
           "items": {
             "type": "string",
             "enum": [
+              "BuildForUnity",
+              "BuildGodot",
               "Compile",
               "CompileProjects",
+              "Doctor",
               "GenerateSchema",
+              "Init",
               "InstallQuickTypeTool",
+              "Migrate",
+              "Native",
               "Pack",
               "PackAll",
               "PackContracts",
@@ -100,9 +125,14 @@
               "PublishHosts",
               "PublishPlugins",
               "PublishProjects",
-              "SyncLatestArtifacts"
+              "SyncLatestArtifacts",
+              "Validate"
             ]
           }
+        },
+        "Template": {
+          "type": "string",
+          "description": "Template to use for init: 'library' or 'application'"
         },
         "Verbosity": {
           "type": "string",
@@ -113,6 +143,10 @@
             "Quiet",
             "Verbose"
           ]
+        },
+        "Wizard": {
+          "type": "boolean",
+          "description": "Alias for --interactive: launch the configuration wizard"
         }
       }
     }
