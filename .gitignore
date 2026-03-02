@@ -11,3 +11,28 @@ repomix-output.txt
 
 # MkDocs build output
 site/
+
+# Build artifacts (versioned output)
+build/_artifacts/
+
+# Fastlane
+mobile/**/fastlane/report.xml
+mobile/**/fastlane/Preview.html
+mobile/**/fastlane/screenshots
+mobile/**/fastlane/test_output
+mobile/**/fastlane/README.md
+
+# Android sample app build outputs
+mobile/**/sample-app/build/
+mobile/**/sample-app/.gradle/
+mobile/**/sample-app/local.properties
+
+# Bundler
+mobile/**/vendor/
+mobile/**/.bundle/
+
+# Godot
+**/.godot/
+
+# Temp build scripts
+build-*.ps1
