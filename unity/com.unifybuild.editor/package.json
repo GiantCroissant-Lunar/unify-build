@@ -1,0 +1,12 @@
+{
+  "name": "com.unifybuild.editor",
+  "version": "1.0.0",
+  "displayName": "UnifyBuild Editor",
+  "description": "Standardized build entry points for UnifyBuild CI/CD pipeline. Provides -executeMethod targets for batch mode builds across Windows, macOS, Linux, Android, and iOS.",
+  "unity": "2021.3",
+  "keywords": ["build", "ci", "cd", "pipeline", "automation"],
+  "author": {
+    "name": "plate"
+  },
+  "type": "tool"
+}
