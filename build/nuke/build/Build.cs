@@ -5,7 +5,7 @@ using UnifyBuild.Nuke;
 using System;
 using System.Linq;
 
-class Build : NukeBuild, IUnify, IUnifySchemaGeneration
+class Build : NukeBuild, IUnify, IUnifySchemaGeneration, IUnifyMobile
 {
     // GitVersion is optional - falls back to computed version if not available
     [GitVersion(UpdateAssemblyInfo = false)]
