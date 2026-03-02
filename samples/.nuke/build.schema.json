@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$ref": "#/definitions/build",
+  "title": "Build Schema",
+  "definitions": {
+    "build": {
+      "type": "object",
+      "properties": {
+        "Configuration": {
+          "type": "string",
+          "description": "Configuration to build - Default is 'Release'"
+        },
+        "Continue": {
+          "type": "boolean",
+          "description": "Indicates to continue a previously failed build attempt"
+        },
+        "Fix": {
+          "type": "boolean",
+          "description": "Auto-fix issues found by doctor"
+        },
+        "Force": {
+          "type": "boolean",
+          "description": "Force overwrite of existing build.config.json"
+        },
+        "Help": {
+          "type": "boolean",
+          "description": "Shows the help text for this build assembly"
+        },
+        "Host": {
+          "type": "string",
+          "description": "Host for execution. Default is 'automatic'",
+          "enum": [
+            "AppVeyor",
+            "AzurePipelines",
+            "Bamboo",
+            "Bitbucket",
+            "Bitrise",
+            "GitHubActions",
+            "GitLab",
+            "Jenkins",
+            "Rider",
+            "SpaceAutomation",
+            "TeamCity",
+            "Terminal",
+            "TravisCI",
+            "VisualStudio",
+            "VSCode"
+          ]
+        },
+        "Interactive": {
+          "type": "boolean",
+          "description": "Run init in interactive mode with step-by-step prompts"
+        },
+        "NoLogo": {
+          "type": "boolean",
+          "description": "Disables displaying the NUKE logo"
+        },
+        "Partition": {
+          "type": "string",
+          "description": "Partition to use on CI"
+        },
+        "Plan": {
+          "type": "boolean",
+          "description": "Shows the execution plan (HTML)"
+        },
+        "Profile": {
+          "type": "array",
+          "description": "Defines the profiles to load",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Root": {
+          "type": "string",
+          "description": "Root directory during build execution"
+        },
+        "Skip": {
+          "type": "array",
+          "description": "List of targets to be skipped. Empty list skips all dependencies",
+          "items": {
+            "type": "string",
+            "enum": [
+              "BuildForUnity",
+              "BuildGodot",
+              "BuildGodotDesktop",
+              "BuildGodotMobile",
+              "Compile",
+              "CompileProjects",
+              "Doctor",
+              "GenerateSchema",
+              "Init",
+              "InstallQuickTypeTool",
+              "Migrate",
+              "MobileBuildAndroid",
+              "MobileBuildAndroidFromProject",
+              "MobileBuildIos",
+              "MobileBuildIosFromProject",
+              "MobileDeployAndroidBeta",
+              "MobileDeployAndroidRelease",
+              "MobileDeployIosBeta",
+              "MobileDeployIosRelease",
+              "MobileRestore",
+              "Native",
+              "Pack",
+              "PackAll",
+              "PackContracts",
+              "PackProjects",
+              "PublishHosts",
+              "PublishPlugins",
+              "PublishProjects",
+              "SyncLatestArtifacts",
+              "UnityExport",
+              "UnityExportDesktop",
+              "UnityExportMobile",
+              "Validate"
+            ]
+          }
+        },
+        "Target": {
+          "type": "array",
+          "description": "List of targets to be invoked. Default is '{default_target}'",
+          "items": {
+            "type": "string",
+            "enum": [
+              "BuildForUnity",
+              "BuildGodot",
+              "BuildGodotDesktop",
+              "BuildGodotMobile",
+              "Compile",
+              "CompileProjects",
+              "Doctor",
+              "GenerateSchema",
+              "Init",
+              "InstallQuickTypeTool",
+              "Migrate",
+              "MobileBuildAndroid",
+              "MobileBuildAndroidFromProject",
+              "MobileBuildIos",
+              "MobileBuildIosFromProject",
+              "MobileDeployAndroidBeta",
+              "MobileDeployAndroidRelease",
+              "MobileDeployIosBeta",
+              "MobileDeployIosRelease",
+              "MobileRestore",
+              "Native",
+              "Pack",
+              "PackAll",
+              "PackContracts",
+              "PackProjects",
+              "PublishHosts",
+              "PublishPlugins",
+              "PublishProjects",
+              "SyncLatestArtifacts",
+              "UnityExport",
+              "UnityExportDesktop",
+              "UnityExportMobile",
+              "Validate"
+            ]
+          }
+        },
+        "Template": {
+          "type": "string",
+          "description": "Template to use for init: 'library' or 'application'"
+        },
+        "Verbosity": {
+          "type": "string",
+          "description": "Logging verbosity during build execution. Default is 'Normal'",
+          "enum": [
+            "Minimal",
+            "Normal",
+            "Quiet",
+            "Verbose"
+          ]
+        },
+        "Wizard": {
+          "type": "boolean",
+          "description": "Alias for --interactive: launch the configuration wizard"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+# Unity generated
+/Library/
+/Temp/
+/Logs/
+/UserSettings/
+/MemoryCaptures/
+/Recordings/
+
+# Unity auto-generated solution/project files
+*.csproj
+*.sln
+
+# OS
+.DS_Store
+Thumbs.db
