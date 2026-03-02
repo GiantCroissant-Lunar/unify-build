@@ -1,0 +1,52 @@
+default_platform(:android)
+
+platform :android do
+  # ── Standalone build (for sample-app or standalone Android projects) ──
+
+  desc "Build the Android app from a standalone Gradle project"
+  lane :build do
+    gradle(
+      task: "clean assembleDebug",
+      project_dir: ENV["ANDROID_PROJECT_DIR"] || "sample-app"
+    )
+  end
+
+  # ── Engine export build (for Godot/Unity exported Gradle projects) ──
+
+  desc "Build APK/AAB from an engine-exported Gradle project"
+  lane :build_from_project do
+    project_dir = ENV["EXPORTED_PROJECT_DIR"]
+    raise "EXPORTED_PROJECT_DIR env var is required" unless project_dir
+
+    build_type = ENV["ANDROID_BUILD_TYPE"] || "Debug"
+    output_format = ENV["ANDROID_OUTPUT_FORMAT"] || "apk" # apk or aab
+    skip_clean = ENV["ANDROID_SKIP_CLEAN"] || "true" # Skip clean by default — Unity IL2CPP cache locks files
+
+    assemble_task = if output_format.downcase == "aab"
+                      "bundle#{build_type}"
+                    else
+                      "assemble#{build_type}"
+                    end
+
+    task = skip_clean.downcase == "true" ? assemble_task : "clean #{assemble_task}"
+
+    gradle(
+      task: task,
+      project_dir: project_dir
+    )
+  end
+
+  # ── Distribution ──
+
+  desc "Build from exported project and push to Play Store internal track"
+  lane :beta do
+    build_from_project
+    upload_to_play_store(track: "internal")
+  end
+
+  desc "Build from exported project and push to Play Store production"
+  lane :release do
+    build_from_project
+    upload_to_play_store(track: "production")
+  end
+end

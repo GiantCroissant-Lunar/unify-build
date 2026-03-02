@@ -1,0 +1,66 @@
+default_platform(:ios)
+
+platform :ios do
+  # ── Standalone build (for native iOS projects) ──
+
+  desc "Build the iOS app from a native Xcode project"
+  lane :build do
+    setup_ci if ENV['CI']
+    match(type: "appstore", readonly: is_ci)
+    build_app(
+      scheme: ENV["IOS_SCHEME"] || "YourApp",
+      export_method: "app-store"
+    )
+  end
+
+  # ── Engine export build (for Godot/Unity exported Xcode projects) ──
+
+  desc "Build IPA from an engine-exported Xcode project"
+  lane :build_from_project do
+    project_dir = ENV["EXPORTED_PROJECT_DIR"]
+    raise "EXPORTED_PROJECT_DIR env var is required" unless project_dir
+
+    setup_ci if ENV['CI']
+    match(type: "appstore", readonly: is_ci)
+
+    # Detect .xcworkspace or .xcodeproj in the exported directory
+    workspace = Dir.glob(File.join(project_dir, "*.xcworkspace")).first
+    project = Dir.glob(File.join(project_dir, "*.xcodeproj")).first
+
+    scheme = ENV["IOS_SCHEME"] || "Unity-iPhone" # Unity default; Godot uses project name
+
+    build_opts = {
+      scheme: scheme,
+      export_method: "app-store",
+      clean: true
+    }
+
+    if workspace
+      build_opts[:workspace] = workspace
+    elsif project
+      build_opts[:project] = project
+    else
+      raise "No .xcworkspace or .xcodeproj found in #{project_dir}"
+    end
+
+    build_app(build_opts)
+  end
+
+  # ── Distribution ──
+
+  desc "Build from exported project and push to TestFlight"
+  lane :beta do
+    build_from_project
+    upload_to_testflight(skip_waiting_for_build_processing: true)
+  end
+
+  desc "Build from exported project and push to App Store"
+  lane :release do
+    build_from_project
+    upload_to_app_store(
+      skip_metadata: false,
+      skip_screenshots: true,
+      submit_for_review: false
+    )
+  end
+end
