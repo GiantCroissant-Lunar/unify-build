@@ -409,8 +409,7 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
                 // Define paths
                 var sourceFile = RootDirectory / "dotnet" / "src" / "UnifyBuild.Nuke" / "BuildConfigJson.cs";
                 var artifactsRoot = RootDirectory / "build" / "_artifacts";
-                var version = UnifyConfig.ArtifactsVersion ?? UnifyConfig.Version ?? "local";
-                var outputFile = artifactsRoot / version / "build.config.schema.json";
+                var outputFile = artifactsRoot / "build.config.schema.json";
 
                 Serilog.Log.Information("Starting schema generation...");
                 Serilog.Log.Information("  Source: {SourceFile}", sourceFile);
