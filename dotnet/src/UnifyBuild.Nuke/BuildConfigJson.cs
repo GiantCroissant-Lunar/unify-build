@@ -107,6 +107,17 @@ public sealed class BuildJsonConfig
     public GodotBuildConfig? GodotBuild { get; set; }
 
     /// <summary>
+    /// Mobile (iOS/Android) build configuration using Fastlane.
+    /// </summary>
+    public MobileBuildConfig? MobileBuild { get; set; }
+
+    /// <summary>
+    /// Unity platform export configuration for building standalone/mobile apps.
+    /// Separate from UnityBuild which handles DLL copying for Unity packages.
+    /// </summary>
+    public UnityExportConfig? UnityExport { get; set; }
+
+    /// <summary>
     /// Advanced package management configuration (multi-registry push, signing, SBOM, retention).
     /// </summary>
     public PackageManagementConfig? PackageManagement { get; set; }
@@ -570,6 +581,17 @@ public sealed class GodotBuildConfig
     /// Platforms to export.
     /// </summary>
     public GodotExportPlatformConfig[]? Platforms { get; set; }
+
+    /// <summary>
+    /// Android keystore path for signing APK/AAB exports.
+    /// Can also be set via GODOT_ANDROID_KEYSTORE_PATH env var.
+    /// </summary>
+    public string? AndroidKeystorePath { get; set; }
+
+    /// <summary>
+    /// Whether to use Fastlane for mobile distribution after Godot export.
+    /// </summary>
+    public bool UseFastlaneForMobile { get; set; } = false;
 }
 
 /// <summary>
@@ -596,6 +618,132 @@ public sealed class GodotExportPlatformConfig
     /// The Godot data directory suffix. Can include {AssemblyName} placeholder.
     /// </summary>
     public string DataDirName { get; set; } = "";
+}
+
+/// <summary>
+/// JSON configuration for mobile (iOS/Android) builds using Fastlane.
+/// </summary>
+public sealed class MobileBuildConfig
+{
+    /// <summary>
+    /// Whether mobile builds are enabled. Default: true.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Root directory containing mobile platform subdirectories (ios/, android/).
+    /// Default: "mobile"
+    /// </summary>
+    public string? MobileRoot { get; set; }
+
+    /// <summary>
+    /// iOS-specific configuration.
+    /// </summary>
+    public MobilePlatformConfig? Ios { get; set; }
+
+    /// <summary>
+    /// Android-specific configuration.
+    /// </summary>
+    public MobilePlatformConfig? Android { get; set; }
+
+    /// <summary>
+    /// Output directory for mobile build artifacts.
+    /// </summary>
+    public string? OutputDir { get; set; }
+}
+
+/// <summary>
+/// Platform-specific mobile build configuration for JSON deserialization.
+/// </summary>
+public sealed class MobilePlatformConfig
+{
+    /// <summary>
+    /// Whether this platform is enabled. Default: true.
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Additional environment variables to pass to Fastlane.
+    /// </summary>
+    public Dictionary<string, string>? EnvVars { get; set; }
+
+    /// <summary>
+    /// Custom Fastlane lane name for build. Default: "build".
+    /// </summary>
+    public string? BuildLane { get; set; }
+
+    /// <summary>
+    /// Custom Fastlane lane name for beta deployment. Default: "beta".
+    /// </summary>
+    public string? BetaLane { get; set; }
+
+    /// <summary>
+    /// Custom Fastlane lane name for release deployment. Default: "release".
+    /// </summary>
+    public string? ReleaseLane { get; set; }
+}
+
+/// <summary>
+/// JSON configuration for Unity platform exports (standalone/mobile builds).
+/// </summary>
+public sealed class UnityExportConfig
+{
+    /// <summary>
+    /// Root directory of the Unity project containing Assets/.
+    /// </summary>
+    public string ProjectRoot { get; set; } = "";
+
+    /// <summary>
+    /// Path to the Unity Editor executable.
+    /// </summary>
+    public string? EditorPath { get; set; }
+
+    /// <summary>
+    /// Environment variable name containing the Unity Editor path. Default: "UNITY_EDITOR_PATH".
+    /// </summary>
+    public string? EditorPathEnv { get; set; }
+
+    /// <summary>
+    /// The static method to invoke via -executeMethod.
+    /// Default: "UnifyBuild.Editor.BuildScript.Build"
+    /// </summary>
+    public string? ExecuteMethod { get; set; }
+
+    /// <summary>
+    /// Platform export configurations.
+    /// </summary>
+    public UnityExportPlatformConfig[]? Platforms { get; set; }
+
+    /// <summary>
+    /// Whether to use Fastlane for mobile distribution after Unity export.
+    /// </summary>
+    public bool UseFastlaneForMobile { get; set; } = false;
+
+    /// <summary>
+    /// Output root directory for exported builds.
+    /// </summary>
+    public string? OutputDir { get; set; }
+}
+
+/// <summary>
+/// Platform-specific Unity export configuration for JSON deserialization.
+/// </summary>
+public sealed class UnityExportPlatformConfig
+{
+    /// <summary>
+    /// Unity BuildTarget name (e.g., "StandaloneWindows64", "Android", "iOS", "StandaloneOSX").
+    /// </summary>
+    public string BuildTarget { get; set; } = "";
+
+    /// <summary>
+    /// Output file or directory name for this platform export.
+    /// </summary>
+    public string? OutputName { get; set; }
+
+    /// <summary>
+    /// Additional arguments to pass to the Unity build method via environment variables.
+    /// </summary>
+    public Dictionary<string, string>? BuildArgs { get; set; }
 }
 
 /// <summary>
@@ -765,13 +913,15 @@ public static class BuildContextLoader
             RustBuild = CreateRustBuildContext(repoRoot, cfg.RustBuild, artifactsVersion),
             GoBuild = CreateGoBuildContext(repoRoot, cfg.GoBuild, artifactsVersion),
             UnityBuild = CreateUnityBuildContext(repoRoot, cfg.UnityBuild),
-            GodotBuild = CreateGodotBuildContext(repoRoot, cfg.GodotBuild)
+            GodotBuild = CreateGodotBuildContext(repoRoot, cfg.GodotBuild, artifactsVersion),
+            MobileBuild = CreateMobileBuildContext(repoRoot, cfg.MobileBuild, artifactsVersion),
+            UnityExport = CreateUnityExportContext(repoRoot, cfg.UnityExport, artifactsVersion)
         };
 
         return context;
     }
 
-    private static GodotBuildContext? CreateGodotBuildContext(AbsolutePath repoRoot, GodotBuildConfig? cfg)
+    private static GodotBuildContext? CreateGodotBuildContext(AbsolutePath repoRoot, GodotBuildConfig? cfg, string artifactsVersion)
     {
         if (cfg is null)
             return null;
@@ -790,7 +940,10 @@ public static class BuildContextLoader
             ExecutablePathEnv = cfg.ExecutablePathEnv,
             ExecutablePath = cfg.ExecutablePath,
             AssemblyName = cfg.AssemblyName,
-            Platforms = platforms
+            Platforms = platforms,
+            AndroidKeystorePath = cfg.AndroidKeystorePath,
+            UseFastlaneForMobile = cfg.UseFastlaneForMobile,
+            OutputDir = repoRoot / "build" / "_artifacts" / artifactsVersion / "godot"
         };
     }
 
@@ -910,6 +1063,93 @@ public static class BuildContextLoader
             TargetFramework = cfg.TargetFramework ?? "netstandard2.1",
             UnityProjectRoot = unityRoot,
             Packages = packages
+        };
+    }
+
+    private static MobileBuildContext? CreateMobileBuildContext(AbsolutePath repoRoot, MobileBuildConfig? cfg, string artifactsVersion)
+    {
+        if (cfg is not null && !cfg.Enabled)
+            return null;
+
+        // If no config provided, check if mobile/ directory exists
+        var defaultMobileRoot = repoRoot / "mobile";
+        if (cfg is null && !Directory.Exists(defaultMobileRoot))
+            return null;
+
+        var mobileRoot = cfg?.MobileRoot is not null
+            ? repoRoot / cfg.MobileRoot
+            : defaultMobileRoot;
+
+        var outputDir = cfg?.OutputDir is not null
+            ? repoRoot / cfg.OutputDir
+            : repoRoot / "build" / "_artifacts" / artifactsVersion / "mobile";
+
+        MobilePlatformContext? ios = null;
+        var iosDir = mobileRoot / "ios";
+        if (Directory.Exists(iosDir) && (cfg?.Ios?.Enabled ?? true))
+        {
+            ios = CreateMobilePlatformContext(iosDir, cfg?.Ios);
+        }
+
+        MobilePlatformContext? android = null;
+        var androidDir = mobileRoot / "android";
+        if (Directory.Exists(androidDir) && (cfg?.Android?.Enabled ?? true))
+        {
+            android = CreateMobilePlatformContext(androidDir, cfg?.Android);
+        }
+
+        if (ios is null && android is null)
+            return null;
+
+        return new MobileBuildContext
+        {
+            Enabled = cfg?.Enabled ?? true,
+            MobileRoot = mobileRoot,
+            Ios = ios,
+            Android = android,
+            OutputDir = outputDir
+        };
+    }
+
+    private static MobilePlatformContext CreateMobilePlatformContext(AbsolutePath workingDir, MobilePlatformConfig? cfg)
+    {
+        return new MobilePlatformContext
+        {
+            Enabled = cfg?.Enabled ?? true,
+            WorkingDir = workingDir,
+            EnvVars = cfg?.EnvVars ?? new Dictionary<string, string>(),
+            BuildLane = cfg?.BuildLane ?? "build",
+            BetaLane = cfg?.BetaLane ?? "beta",
+            ReleaseLane = cfg?.ReleaseLane ?? "release"
+        };
+    }
+
+    private static UnityExportContext? CreateUnityExportContext(AbsolutePath repoRoot, UnityExportConfig? cfg, string artifactsVersion)
+    {
+        if (cfg is null)
+            return null;
+
+        var outputDir = cfg.OutputDir is not null
+            ? repoRoot / cfg.OutputDir
+            : repoRoot / "build" / "_artifacts" / artifactsVersion / "unity-export";
+
+        var platforms = (cfg.Platforms ?? Array.Empty<UnityExportPlatformConfig>())
+            .Select(p => new UnityExportPlatformContext
+            {
+                BuildTarget = p.BuildTarget,
+                OutputName = p.OutputName ?? p.BuildTarget,
+                BuildArgs = p.BuildArgs ?? new Dictionary<string, string>()
+            }).ToArray();
+
+        return new UnityExportContext
+        {
+            ProjectRoot = repoRoot / cfg.ProjectRoot,
+            EditorPath = cfg.EditorPath,
+            EditorPathEnv = cfg.EditorPathEnv ?? "UNITY_EDITOR_PATH",
+            ExecuteMethod = cfg.ExecuteMethod ?? "UnifyBuild.Editor.BuildScript.Build",
+            Platforms = platforms,
+            UseFastlaneForMobile = cfg.UseFastlaneForMobile,
+            OutputDir = outputDir
         };
     }
 

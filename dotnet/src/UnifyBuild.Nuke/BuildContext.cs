@@ -85,4 +85,14 @@ public sealed record BuildContext
     /// Godot build configuration for exporting games.
     /// </summary>
     public GodotBuildContext? GodotBuild { get; init; }
+
+    /// <summary>
+    /// Mobile (iOS/Android) build configuration using Fastlane.
+    /// </summary>
+    public MobileBuildContext? MobileBuild { get; init; }
+
+    /// <summary>
+    /// Unity platform export configuration for building standalone/mobile apps.
+    /// </summary>
+    public UnityExportContext? UnityExport { get; init; }
 }

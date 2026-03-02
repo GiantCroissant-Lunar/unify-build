@@ -24,7 +24,7 @@
 
   <!-- Include generated schema file in NuGet package -->
   <ItemGroup>
-    <None Include="..\..\..\build\_artifacts\3.0.0\build.config.schema.json"
+    <None Include="..\..\..\build\_artifacts\build.config.schema.json"
           Pack="true"
           PackagePath="contentFiles\any\any"
           Visible="false" />
