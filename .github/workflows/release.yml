@@ -90,7 +90,7 @@ jobs:
 
       - name: Generate release changelog
         id: changelog
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: --latest --strip header
@@ -99,7 +99,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Update CHANGELOG.md
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         with:
           config: cliff.toml
           args: --tag ${{ github.ref_name }}
