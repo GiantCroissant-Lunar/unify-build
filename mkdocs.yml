@@ -46,18 +46,45 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - Configuration:
-      - Configuration Reference: configuration-reference.md
-      - Caching: caching.md
+  - Guides:
+    - Getting Started: getting-started.md
+    - Migration Guide: migration-guide.md
+    - Releasing: releasing.md
+    - Contributing: contributing.md
+    - Troubleshooting: troubleshooting.md
+  - Reference:
+    - Configuration Reference: configuration-reference.md
+    - Caching: caching.md
+    - Telemetry: telemetry.md
   - Examples:
       - .NET Library: examples/dotnet-library.md
       - .NET Application: examples/dotnet-application.md
       - Native Build (CMake): examples/native-build.md
       - Unity Build: examples/unity-build.md
-  - Migration Guide: migration-guide.md
-  - Architecture: architecture.md
-  - Releasing: releasing.md
-  - Telemetry: telemetry.md
-  - Contributing: contributing.md
-  - Troubleshooting: troubleshooting.md
+  - Architecture:
+    - Overview: architecture.md
+    - ADRs:
+      - ADR 0001 Build Config Schema Versioning: adrs/adr-0001-build-config-schema-versioning.md
+    - RFCs:
+      - RFC 0001 Generic Build Schema: rfcs/rfc-0001-generic-build-schema.md
+      - RFC 0002 Dotnet Tool Distribution: rfcs/rfc-0002-dotnet-tool-distribution.md
+  - Specifications:
+    - Overview: specs/index.md
+    - Automated JSON Schema Generation:
+      - Requirements: specs/automated-json-schema-generation/requirements.md
+      - Design: specs/automated-json-schema-generation/design.md
+      - Tasks: specs/automated-json-schema-generation/tasks.md
+    - Project Enhancements 2026:
+      - Requirements: specs/project-enhancements-2026/requirements.md
+      - Design: specs/project-enhancements-2026/design.md
+      - Tasks: specs/project-enhancements-2026/tasks.md
+  - Archive:
+    - Overview: archive/index.md
+    - Removed:
+      - BuildConfigJson V1 Removed: archive/removed/BuildConfigJsonV1_REMOVED.md
+    - Reviews:
+      - Code Review V2 Schema: archive/reviews/CODE_REVIEW_V2_SCHEMA.md
+      - Code Review V2 Schema Updated: archive/reviews/CODE_REVIEW_V2_SCHEMA_UPDATED.md
+      - Simplified V2 Only: archive/reviews/SIMPLIFIED_V2_ONLY.md
+    - Progress:
+      - Dotnet Tool Migration: archive/progress/PROGRESS-dotnet-tool-migration.md

@@ -8,6 +8,8 @@ A .NET build orchestration system built on [NUKE](https://nuke.build/) that prov
 - [Configuration Reference](configuration-reference.md) — All `build.config.json` properties
 - [Examples](examples/dotnet-library.md) — End-to-end project examples
 - [Architecture](architecture.md) — Component design and extension points
+- [Specifications](specs/index.md) — Feature requirements, design notes, and implementation tasks
 - [Releasing](releasing.md) — Version bumps, tagging, NuGet, and OpenUPM onboarding
+- [Archive](archive/index.md) — Historical reviews, progress notes, and removed-behavior docs
 - [Contributing](contributing.md) — How to extend UnifyBuild
 - [Troubleshooting](troubleshooting.md) — Common errors and fixes
