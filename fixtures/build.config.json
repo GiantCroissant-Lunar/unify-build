@@ -1,0 +1,47 @@
+{
+  "$schema": "../build/build.config.schema.json",
+  "versionEnv": "GITVERSION_MAJORMINORPATCH",
+
+  "projectGroups": {},
+
+  "godotBuild": {
+    "projectRoot": "fixtures/godot-app",
+    "executablePathEnv": "GODOT",
+    "assemblyName": "godot-app",
+    "useFastlaneForMobile": true,
+    "platforms": [
+      {
+        "rid": "win-x64",
+        "presetName": "Windows Desktop",
+        "binaryName": "godot-app.exe",
+        "dataDirName": "{AssemblyName}_Data"
+      },
+      {
+        "rid": "android-arm64",
+        "presetName": "Android",
+        "binaryName": "godot-app.apk",
+        "dataDirName": ""
+      }
+    ]
+  },
+
+  "unityExport": {
+    "projectRoot": "fixtures/unity-app",
+    "editorPath": "C:/Program Files/Unity/Hub/Editor/6000.3.10f1/Editor/Unity.exe",
+    "useFastlaneForMobile": true,
+    "platforms": [
+      {
+        "buildTarget": "StandaloneWindows64",
+        "outputName": "unity-app.exe"
+      },
+      {
+        "buildTarget": "Android",
+        "outputName": "unity-android"
+      }
+    ]
+  },
+
+  "mobileBuild": {
+    "mobileRoot": "mobile"
+  }
+}

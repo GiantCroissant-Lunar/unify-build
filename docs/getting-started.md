@@ -19,6 +19,15 @@ Restore tools after cloning:
 dotnet tool restore
 ```
 
+When you are developing UnifyBuild itself on an unpublished version line, restore from the repo-local flat feed first:
+
+```bash
+task tool:bootstrap-local
+dotnet tool restore
+```
+
+The repository `NuGet.config` includes `build/_artifacts/local/flat` as a package source so local tool restores work once the packages have been packed.
+
 ### Install the Library (optional)
 
 If you're writing a custom NUKE build script, reference the library directly:
@@ -26,6 +35,17 @@ If you're writing a custom NUKE build script, reference the library directly:
 ```bash
 dotnet add package UnifyBuild.Nuke
 ```
+
+### Unity Package Surface
+
+Unity editor entrypoints are packaged separately under `unity/com.unifybuild.editor`.
+
+- Use `UnifyBuild.Tool` or `UnifyBuild.Nuke` for orchestration outside the Unity editor.
+- Use `com.unifybuild.editor` inside the Unity project for `-executeMethod` entrypoints and batch-mode build hooks.
+
+This keeps NuGet consumers focused on the build foundation while the Unity package stays UPM/OpenUPM-friendly.
+
+The repository aligns public artifact versions on a shared release line. When cutting a release, the Unity package manifest version should match the repo tag and the NuGet package version.
 
 ## Quick Start
 
@@ -148,7 +168,14 @@ UnifyBuild also supports CMake-based native builds and Unity package builds. Add
 }
 ```
 
+Unity export flows are intentionally split across two artifacts:
+
+- `dotnet unify-build` owns the external orchestration targets such as `BuildForUnity` and `UnityExport`.
+- `com.unifybuild.editor` supplies the Unity editor methods those targets call in batch mode.
+
 See the [examples](./examples/) directory for complete walkthroughs.
+
+Internal dogfooding projects and engine-specific fixtures live under `fixtures/`. They are useful for repository validation, but they are not treated as the public example surface.
 
 ## Next Steps
 
