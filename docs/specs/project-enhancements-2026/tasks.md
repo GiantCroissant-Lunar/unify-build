@@ -92,7 +92,7 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
     - Add steps: build → pack → publish to NuGet.org → create GitHub Release
     - Generate SBOM via `dotnet-sbom-tool` (SPDX format) and attach to release
     - Generate changelog and include in release body
-    - Store `NUGET_API_KEY` as GitHub secret reference
+    - Configure a repository CI credential for NuGet publishing
     - _Requirements: 1.5, 1.6, 1.7, 1.8, 1.9, 1.10_
 
   - [x] 3.4 Set up test project infrastructure

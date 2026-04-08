@@ -418,7 +418,7 @@ if (group.SourceDir.Contains(".."))
 
 **Error Messages**: Include file paths
 - Helpful for debugging
-- No sensitive data exposed (build configs are not secrets)
+- No credential material exposed (build configs are configuration files, not credential stores)
 
 ---
 

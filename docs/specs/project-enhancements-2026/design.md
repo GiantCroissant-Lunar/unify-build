@@ -173,7 +173,7 @@ dotnet/
 - Steps: GitVersion → build → pack → publish to NuGet.org → create GitHub Release → generate SBOM → attach changelog
 - Uses `dotnet-sbom-tool` for SBOM generation (SPDX format)
 - Uses `gitversion/setup@v1` for semantic versioning
-- NuGet API key stored as GitHub secret `NUGET_API_KEY`
+- NuGet publishing credentials should be supplied through repository CI settings rather than committed to source
 
 **GitVersion Integration**: Already configured via `GitVersion.yml` (Mainline mode, Patch increment on main). CI workflows use `GITVERSION_MAJORMINORPATCH` env var which `BuildContextLoader` already reads.
 
