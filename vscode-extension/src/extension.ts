@@ -95,6 +95,13 @@ interface ProjectGroup {
   exclude?: string[];
 }
 
+interface ProjectGroupConfigShape {
+  sourceDir?: string;
+  action?: string;
+  include?: string[];
+  exclude?: string[];
+}
+
 class ProjectGroupItem extends vscode.TreeItem {
   constructor(
     public readonly group: ProjectGroup,
@@ -175,13 +182,7 @@ export class ProjectGroupTreeProvider
           const config = JSON.parse(raw);
           if (config.projectGroups && typeof config.projectGroups === "object") {
             return Object.entries(config.projectGroups).map(
-              ([name, value]: [string, any]) => ({
-                name,
-                sourceDir: value.sourceDir,
-                action: value.action,
-                include: value.include,
-                exclude: value.exclude,
-              })
+              ([name, value]) => this.toProjectGroup(name, value)
             );
           }
         } catch {
@@ -190,6 +191,25 @@ export class ProjectGroupTreeProvider
       }
     }
     return [];
+  }
+
+  private toProjectGroup(name: string, value: unknown): ProjectGroup {
+    if (!value || typeof value !== "object") {
+      return { name };
+    }
+
+    const group = value as ProjectGroupConfigShape;
+    return {
+      name,
+      sourceDir: typeof group.sourceDir === "string" ? group.sourceDir : undefined,
+      action: typeof group.action === "string" ? group.action : undefined,
+      include: Array.isArray(group.include)
+        ? group.include.filter((entry): entry is string => typeof entry === "string")
+        : undefined,
+      exclude: Array.isArray(group.exclude)
+        ? group.exclude.filter((entry): entry is string => typeof entry === "string")
+        : undefined,
+    };
   }
 }
 

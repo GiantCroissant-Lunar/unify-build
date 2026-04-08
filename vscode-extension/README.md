@@ -36,7 +36,10 @@ VS Code extension for the [UnifyBuild](https://github.com/unifybuild/unifybuild)
 ```bash
 cd vscode-extension
 npm install
-npm run compile
+npm run check
+npm run package
 ```
 
 Press `F5` in VS Code to launch the Extension Development Host for testing.
+
+The repository now validates the extension in CI by compiling, linting, and packaging a `.vsix` artifact on changes under `vscode-extension/`.
