@@ -9,9 +9,15 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>unify-build</ToolCommandName>
     <PackageId>UnifyBuild.Tool</PackageId>
-    <Version>3.0.2</Version>
+    <Version>0.3.2</Version>
     <Authors>plate</Authors>
     <Description>CLI tool for running UnifyBuild targets from build.config.json without a Nuke build project.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/unifybuild/unifybuild</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/unifybuild/unifybuild</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>build;nuke;dotnet;unity;ci;cd</PackageTags>
 
     <!-- Enable BinaryFormatter for NUKE 8.0.0 compatibility on .NET 8 -->
     <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
@@ -20,6 +26,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\UnifyBuild.Nuke\UnifyBuild.Nuke.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md"
+          Pack="true"
+          PackagePath="" />
   </ItemGroup>
 
 </Project>

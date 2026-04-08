@@ -63,9 +63,9 @@ All tests should pass, confirming:
 
 To test Requirement 7.3 (schema updates when package is updated):
 
-1. Install version 3.0.0 of the package
+1. Install version 0.3.2 of the package
 2. Verify the schema file exists
-3. Build a new version of the package (e.g., 3.0.1)
+3. Build a new version of the package (e.g., 0.3.3)
 4. Update the package reference in TestConsumer.csproj
 5. Run `dotnet restore` to update the package
 6. Verify the schema file is updated with the new version

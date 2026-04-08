@@ -8,6 +8,25 @@ vars:
   UNIFY_BUILD_TOOL: dotnet tool run unify-build --
 
 tasks:
+  release:bump-version:
+    desc: Update package versions and top changelog headings before tagging
+    vars:
+      VERSION: '{{default "" .VERSION}}'
+    cmds:
+      - pwsh -NoProfile -ExecutionPolicy Bypass -File build/bump-version.ps1 -Version {{.VERSION}}
+
+  tool:bootstrap-local:
+    desc: Pack local UnifyBuild packages and install/update the repo tool manifest from the local flat feed
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+    cmds:
+      - echo "Packing local UnifyBuild.Nuke package..."
+      - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Nuke/UnifyBuild.Nuke.csproj -o build/_artifacts/local/flat
+      - echo "Packing local UnifyBuild.Tool package..."
+      - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Tool/UnifyBuild.Tool.csproj -o build/_artifacts/local/flat
+      - echo "Installing local tool manifest from build/_artifacts/local/flat..."
+      - dotnet tool install --local --add-source build/_artifacts/local/flat UnifyBuild.Tool || dotnet tool update --local --add-source build/_artifacts/local/flat UnifyBuild.Tool
+
   hub:install-hooks:
     desc: Install pre-commit hooks from lunar-snake-hub into .git/hooks
     cmds:
@@ -41,6 +60,7 @@ tasks:
     vars:
       TARGET: '{{default "PackProjects" .TARGET}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} {{.TARGET}} --plan'
       - cmd: echo Graph written to {{.GRAPH_HTML}}
@@ -61,6 +81,7 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} Compile --configuration {{.CONFIGURATION}}'
 
@@ -69,6 +90,7 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} PackProjects --configuration {{.CONFIGURATION}}'
 
@@ -77,6 +99,7 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} PublishHosts --configuration {{.CONFIGURATION}}'
 
@@ -85,6 +108,7 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} PublishPlugins --configuration {{.CONFIGURATION}}'
 
@@ -93,6 +117,7 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} PublishProjects --configuration {{.CONFIGURATION}}'
 
@@ -101,6 +126,7 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - cmd: 'echo "If unify-build is not published for the current version line, run: task tool:bootstrap-local"'
       - cmd: dotnet tool restore
       - cmd: '{{.UNIFY_BUILD_TOOL}} SyncLatestArtifacts --configuration {{.CONFIGURATION}}'
 
@@ -120,9 +146,8 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
-      - echo "Building UnifyBuild.Tool package..."
-      - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Tool/UnifyBuild.Tool.csproj -o build/_artifacts/local/flat
-      - echo "Installing local tool..."
-      - dotnet tool install --local --add-source build/_artifacts/local/flat UnifyBuild.Tool || dotnet tool update --local --add-source build/_artifacts/local/flat UnifyBuild.Tool
+      - task: tool:bootstrap-local
+        vars:
+          CONFIGURATION: '{{.CONFIGURATION}}'
       - echo "Running tool to build itself..."
       - dotnet unify-build PackProjects --configuration {{.CONFIGURATION}}

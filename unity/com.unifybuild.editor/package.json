@@ -1,12 +1,17 @@
 {
   "name": "com.unifybuild.editor",
-  "version": "1.0.0",
+  "version": "0.3.2",
   "displayName": "UnifyBuild Editor",
-  "description": "Standardized build entry points for UnifyBuild CI/CD pipeline. Provides -executeMethod targets for batch mode builds across Windows, macOS, Linux, Android, and iOS.",
+  "description": "Unity editor entry points for UnifyBuild-driven batch mode builds and exports across desktop and mobile targets.",
   "unity": "2021.3",
-  "keywords": ["build", "ci", "cd", "pipeline", "automation"],
+  "keywords": ["build", "ci", "cd", "pipeline", "automation", "unity", "editor", "openupm"],
+  "category": "Tools",
+  "documentationUrl": "https://github.com/unifybuild/unifybuild/tree/main/unity/com.unifybuild.editor",
+  "changelogUrl": "https://github.com/unifybuild/unifybuild/blob/main/unity/com.unifybuild.editor/CHANGELOG.md",
+  "licensesUrl": "https://github.com/unifybuild/unifybuild/blob/main/LICENSE",
   "author": {
-    "name": "plate"
+    "name": "plate",
+    "url": "https://github.com/unifybuild/unifybuild"
   },
   "type": "tool"
 }

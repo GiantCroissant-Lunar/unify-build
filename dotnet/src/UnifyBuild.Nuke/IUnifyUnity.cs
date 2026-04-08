@@ -4,7 +4,6 @@ using System.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 namespace UnifyBuild.Nuke;
@@ -57,7 +56,7 @@ public interface IUnifyUnity : IUnifyCompile
                 var packageRuntimeDir = unityConfig.UnityProjectRoot
                     / "project" / "packages" / mapping.ScopedIndex / mapping.PackageName / "Runtime";
 
-                EnsureExistingDirectory(packageRuntimeDir);
+                packageRuntimeDir.CreateDirectory();
 
                 // Copy build output DLLs from source projects
                 foreach (var project in mapping.SourceProjects)

@@ -351,17 +351,17 @@ The implementation has excellent design and solid code quality, but **critically
 3. ✅ Rename existing `BuildContextLoader` → `BuildContextLoaderV1`
 4. ✅ Restore v1 schema support with deprecation warnings
 5. ✅ Create unified entry point that auto-detects version
-6. ✅ Update version to `2.0.0` (major version for new features)
+6. ✅ Update version to `0.2.0` (pre-1.0 feature milestone)
 7. ✅ Test with existing mung-bean* v1 configs
 8. ✅ Add deprecation warnings for v1 usage
 
-### Alternative: Publish as v2.0.0-preview
+### Alternative: Publish as v0.2.0-preview
 
 If you want to get v2 schema out for testing:
-- Publish as `2.0.0-preview1` (prerelease)
+- Publish as `0.2.0-preview1` (prerelease)
 - Document that it's breaking
 - Give consumers time to test migration
-- Release stable `2.0.0` after validation
+- Release stable `0.2.0` after validation
 
 ---
 
@@ -370,7 +370,7 @@ If you want to get v2 schema out for testing:
 **Option 1: Fix Critical Issues (Preferred)**
 - Implement fixes 1-4 above
 - Keep backward compatibility
-- Publish as `UnifyBuild.Nuke 2.0.0` (major version)
+- Publish as `UnifyBuild.Nuke 0.2.0` (pre-1.0 feature release)
 - RFC Phase 1 complete ✅
 
 **Option 2: Rollback and Restart**
@@ -379,7 +379,7 @@ If you want to get v2 schema out for testing:
 - More time, but cleaner
 
 **Option 3: Document as Breaking**
-- Accept this is v3.0.0 (Phase 3)
+- Accept this is v0.4.0 (Phase 3)
 - Update RFC timeline (skip Phase 1-2)
 - Require all consumers migrate immediately
 - High risk, not recommended
@@ -394,7 +394,7 @@ If you want to get v2 schema out for testing:
 4. **Update**: Version number and changelog
 5. **Document**: Migration guide for v1 → v2
 6. **Validate**: Test dogfooding scenario
-7. **Publish**: As `2.0.0` with dual support
+7. **Publish**: As `0.2.0` with dual support
 
 ---
 

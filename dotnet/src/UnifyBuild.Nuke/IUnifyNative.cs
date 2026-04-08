@@ -2,7 +2,6 @@ using System.Runtime.InteropServices;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
-using static Nuke.Common.IO.FileSystemTasks;
 
 namespace UnifyBuild.Nuke;
 
@@ -40,7 +39,12 @@ public interface IUnifyNative : IUnifyBuildConfig
                 return;
             }
 
-            var cmakeListsPath = nativeConfig.CMakeSourceDir / "CMakeLists.txt";
+            var sourceDir = nativeConfig.CMakeSourceDir
+                ?? throw new InvalidOperationException("Native build context is missing CMakeSourceDir.");
+            var buildDir = nativeConfig.CMakeBuildDir
+                ?? throw new InvalidOperationException("Native build context is missing CMakeBuildDir.");
+
+            var cmakeListsPath = sourceDir / "CMakeLists.txt";
             if (!File.Exists(cmakeListsPath))
             {
                 Serilog.Log.Warning("CMakeLists.txt not found at {Path}. Skipping native build.", cmakeListsPath);
@@ -48,12 +52,12 @@ public interface IUnifyNative : IUnifyBuildConfig
             }
 
             // Execute custom pre-build commands
-            ExecuteCustomCommands(nativeConfig.CustomCommands, nativeConfig.CMakeSourceDir!);
+            ExecuteCustomCommands(nativeConfig.CustomCommands, sourceDir);
 
             var vcpkgToolchain = nativeConfig.AutoDetectVcpkg
                 ? TryDetectVcpkgToolchain(UnifyConfig.RepoRoot)
                 : null;
-            var hasPreset = HasCMakePresets(nativeConfig.CMakeSourceDir, nativeConfig.CMakePreset);
+            var hasPreset = HasCMakePresets(sourceDir);
 
             if (hasPreset && !string.IsNullOrEmpty(nativeConfig.CMakePreset))
             {
@@ -112,7 +116,7 @@ public interface IUnifyNative : IUnifyBuildConfig
         }
     }
 
-    private bool HasCMakePresets(AbsolutePath sourceDir, string? presetName)
+    private static bool HasCMakePresets(AbsolutePath sourceDir)
     {
         var presetsPath = sourceDir / "CMakePresets.json";
         return File.Exists(presetsPath);
@@ -207,10 +211,15 @@ public interface IUnifyNative : IUnifyBuildConfig
     {
         Serilog.Log.Information("Building native with CMake configure + build");
 
-        EnsureExistingDirectory(config.CMakeBuildDir);
+        var sourceDir = config.CMakeSourceDir
+            ?? throw new InvalidOperationException("Native build context is missing CMakeSourceDir.");
+        var buildDir = config.CMakeBuildDir
+            ?? throw new InvalidOperationException("Native build context is missing CMakeBuildDir.");
+
+        buildDir.CreateDirectory();
 
         // Configure
-        var configureArgs = $"-S \"{config.CMakeSourceDir}\" -B \"{config.CMakeBuildDir}\" -DCMAKE_BUILD_TYPE={config.BuildConfig}";
+        var configureArgs = $"-S \"{sourceDir}\" -B \"{buildDir}\" -DCMAKE_BUILD_TYPE={config.BuildConfig}";
 
         if (!string.IsNullOrEmpty(vcpkgToolchain))
         {
@@ -223,12 +232,12 @@ public interface IUnifyNative : IUnifyBuildConfig
             configureArgs += $" {option}";
         }
 
-        ProcessTasks.StartProcess("cmake", configureArgs, config.CMakeSourceDir)
+        ProcessTasks.StartProcess("cmake", configureArgs, sourceDir)
             .AssertZeroExitCode();
 
         // Build
-        var buildArgs = $"--build \"{config.CMakeBuildDir}\" --config {config.BuildConfig}";
-        ProcessTasks.StartProcess("cmake", buildArgs, config.CMakeSourceDir)
+        var buildArgs = $"--build \"{buildDir}\" --config {config.BuildConfig}";
+        ProcessTasks.StartProcess("cmake", buildArgs, sourceDir)
             .AssertZeroExitCode();
     }
 
@@ -240,12 +249,15 @@ public interface IUnifyNative : IUnifyBuildConfig
             return;
         }
 
-        EnsureExistingDirectory(config.OutputDir);
+        var buildDir = config.CMakeBuildDir
+            ?? throw new InvalidOperationException("Native build context is missing CMakeBuildDir.");
 
-        var buildOutputDir = config.CMakeBuildDir / config.BuildConfig;
+        config.OutputDir.CreateDirectory();
+
+        var buildOutputDir = buildDir / config.BuildConfig;
         if (!Directory.Exists(buildOutputDir))
         {
-            buildOutputDir = config.CMakeBuildDir;
+            buildOutputDir = buildDir;
         }
 
         foreach (var pattern in config.ArtifactPatterns)

@@ -332,35 +332,35 @@ private static List<string> DiscoverProjectsInGroup(...)
 
 **Current**: `UnifyBuild.Nuke 0.1.7`
 
-**Recommended**: Bump to `2.0.0` for semantic versioning
+**Recommended**: Bump to `0.2.0` for semantic versioning on the active pre-1.0 line
 
 **Rationale**:
 - ✅ Major new feature (v2 schema + projectGroups)
 - ✅ Backward compatible (but significant addition)
 - ✅ RFC Phase 1 complete (milestone release)
 - ❌ Not a patch (0.1.7 → 0.1.8)
-- ❌ Not a minor (0.1.7 → 0.2.0) - too significant
+- ✅ Fits the agreed pre-1.0 line (`0.1.7` → `0.2.0`)
 
-**Semantic Versioning Interpretation**:
-- Major (X.0.0): Breaking changes
-- Minor (0.X.0): New features, backward compatible
-- Patch (0.0.X): Bug fixes
+**Pre-1.0 Versioning Interpretation**:
+- `0.2.0`: schema milestone with backward compatibility
+- `0.3.0`: tool and distribution milestone
+- `0.4.0`: planned breaking cleanup point for removing deprecated v1 support
 
-**Argument for 2.0.0**:
+**Argument for 0.2.0**:
 - Establishes new schema as primary (v2)
-- Signals maturity (out of 0.x range)
+- Keeps the repo on the agreed pre-1.0 line
 - Clear milestone for consumers
-- Aligns with RFC terminology (v1 → v2)
+- Aligns with the repo's current version policy
 
 **Argument for 0.2.0**:
 - Technically backward compatible
 - Follows SemVer strictly
 - Less "scary" for consumers
 
-**My Recommendation**: **2.0.0**
-- Clear signal of new architecture
-- Justifies asking consumers to review/migrate
-- Aligns with RFC's v1 vs v2 terminology
+**My Recommendation**: **0.2.0**
+- Clear signal of a schema milestone without inventing a fake major release
+- Fits the repo's active pre-1.0 line
+- Leaves `0.3.x` and `0.4.0` available for later milestones
 
 ### Publishing Checklist
 
@@ -369,13 +369,13 @@ private static List<string> DiscoverProjectsInGroup(...)
 - [ ] Test dogfooding scenario (manually run build)
 - [ ] Update CHANGELOG.md with v2 features
 - [ ] Update README with v2 examples
-- [ ] Bump version to 2.0.0 in .csproj
+- [ ] Bump version to 0.2.0 in .csproj
 - [ ] Add migration guide (docs/migration-v1-to-v2.md)
-- [ ] Tag release in git: `v2.0.0`
+- [ ] Tag release in git: `v0.2.0`
 
 **After Publishing**:
 - [ ] Notify mung-bean* consumers
-- [ ] Update mung-bean* to reference v2.0.0
+- [ ] Update mung-bean* to reference v0.2.0
 - [ ] Begin Phase 2: consumer migration
 - [ ] Monitor for issues/feedback
 
@@ -470,7 +470,7 @@ The implementation is **well-architected**, **RFC-compliant**, and **production-
 ### Suggested Actions
 
 **Immediate (before merge)**:
-1. ✅ Bump version to `2.0.0` in `.csproj`
+1. ✅ Bump version to `0.2.0` in `.csproj`
 2. ✅ Add CHANGELOG entry documenting v2 features
 3. ✅ Test dogfooding scenario manually
 
@@ -486,7 +486,7 @@ The implementation is **well-architected**, **RFC-compliant**, and **production-
 
 **Long-term (Phase 3, 6+ months)**:
 1. Deprecate v1 loader (warnings → errors)
-2. Release v3.0.0 with v1 removed
+2. Release v0.4.0 with v1 removed
 3. Archive v1 schema docs
 
 ---
@@ -508,13 +508,13 @@ The implementation is **well-architected**, **RFC-compliant**, and **production-
 - Document V2 loader as direct-use-only
 - Consistent logging (`global::Serilog`)
 
-**Risk Assessment**: 🟢 **LOW** - Safe to merge and publish as v2.0.0
+**Risk Assessment**: 🟢 **LOW** - Safe to merge and publish as v0.2.0
 
 **Next Steps**: Follow publishing checklist, test dogfooding, deploy to consumers.
 
 ---
 
 **Reviewer Sign-Off**: ✅ **APPROVED**
-**Recommended Version**: **2.0.0**
+**Recommended Version**: **0.2.0**
 **Recommended Timeline**: Merge immediately, publish within 1 week after testing
 

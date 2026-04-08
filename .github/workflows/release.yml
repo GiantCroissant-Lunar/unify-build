@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build, Pack & Release
+  nuget-release:
+    name: Publish NuGet Artifacts
     runs-on: ubuntu-latest
 
     steps:
@@ -25,13 +25,13 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Setup GitVersion
-        uses: gitversion/setup@v1
+        uses: gittools/actions/gitversion/setup@v4.5.0
         with:
           versionSpec: '6.x'
 
       - name: Execute GitVersion
         id: gitversion
-        uses: gitversion/execute@v1
+        uses: gittools/actions/gitversion/execute@v4.5.0
 
       - name: Cache NuGet packages
         uses: actions/cache@v4
@@ -88,6 +88,177 @@ jobs:
             -nsb https://github.com/${{ github.repository }}
         working-directory: dotnet
 
+      - name: Upload NuGet release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-release-assets
+          path: |
+            dotnet/artifacts/*.nupkg
+            dotnet/artifacts/_manifest/spdx_2.2/manifest.spdx.json
+
+  unity-package:
+    name: Package Unity / OpenUPM Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Unity package metadata
+        env:
+          TAG_VERSION: ${{ github.ref_name }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          package_root = Path("unity/com.unifybuild.editor")
+          manifest = json.loads((package_root / "package.json").read_text(encoding="utf-8"))
+          tag_version = os.environ["TAG_VERSION"].removeprefix("v")
+
+          required_fields = [
+              "name",
+              "version",
+              "displayName",
+              "description",
+              "unity",
+              "documentationUrl",
+              "changelogUrl",
+              "licensesUrl",
+          ]
+          missing = [field for field in required_fields if not manifest.get(field)]
+          if missing:
+              raise SystemExit(f"Missing package metadata fields: {', '.join(missing)}")
+
+          required_files = [
+              package_root / "README.md",
+              package_root / "CHANGELOG.md",
+              package_root / "Editor" / "BuildScript.cs",
+              package_root / "Editor" / "UnifyBuild.Editor.asmdef",
+          ]
+          missing_files = [str(path) for path in required_files if not path.exists()]
+          if missing_files:
+              raise SystemExit(f"Missing Unity package files: {', '.join(missing_files)}")
+
+          if manifest["version"] != tag_version:
+              raise SystemExit(
+                f"Unity package version {manifest['version']} does not match release tag {tag_version}"
+              )
+
+          print(f"Validated {manifest['name']} version {manifest['version']}")
+          PY
+
+      - name: Validate OpenUPM onboarding metadata
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def parse_simple_yaml(path: Path):
+              data = {}
+              current_list = None
+              for raw_line in path.read_text(encoding="utf-8").splitlines():
+                  line = raw_line.rstrip()
+                  if not line or line.lstrip().startswith("#"):
+                      continue
+                  if current_list and line.startswith("  - "):
+                      data[current_list].append(line[4:].strip())
+                      continue
+                  current_list = None
+                  if line.endswith(":"):
+                      key = line[:-1].strip()
+                      data[key] = []
+                      current_list = key
+                      continue
+                  key, value = line.split(":", 1)
+                  value = value.strip()
+                  if value == "null":
+                      parsed = None
+                  elif value in {"''", '""'}:
+                      parsed = ""
+                  elif (value.startswith("'") and value.endswith("'")) or (value.startswith('"') and value.endswith('"')):
+                      parsed = value[1:-1]
+                  else:
+                      parsed = value
+                  data[key.strip()] = parsed
+              return data
+
+          openupm_metadata = parse_simple_yaml(Path("openupm/com.unifybuild.editor.yml"))
+          unity_manifest = json.loads(Path("unity/com.unifybuild.editor/package.json").read_text(encoding="utf-8"))
+
+          required = ["name", "displayName", "description", "repoUrl", "licenseSpdxId", "gitTagPrefix", "minVersion", "readme"]
+          missing = [key for key in required if key not in openupm_metadata or openupm_metadata[key] in (None, "")]
+          if missing:
+              raise SystemExit(f"Missing OpenUPM metadata fields: {', '.join(missing)}")
+
+          if openupm_metadata["name"] != unity_manifest["name"]:
+              raise SystemExit("OpenUPM metadata name does not match unity package name")
+          if openupm_metadata["displayName"] != unity_manifest["displayName"]:
+              raise SystemExit("OpenUPM metadata displayName does not match unity package displayName")
+          if openupm_metadata["description"] != unity_manifest["description"]:
+              raise SystemExit("OpenUPM metadata description does not match unity package description")
+          if openupm_metadata["licenseSpdxId"] != "MIT":
+              raise SystemExit("OpenUPM metadata must use MIT licenseSpdxId")
+          if openupm_metadata["gitTagPrefix"] != "v":
+              raise SystemExit("OpenUPM metadata must use gitTagPrefix: v")
+          if openupm_metadata["readme"] != "main:unity/com.unifybuild.editor/README.md":
+              raise SystemExit("OpenUPM metadata readme must point at unity/com.unifybuild.editor/README.md")
+
+          def parse_semver(version: str):
+              core = version.split("-", 1)[0]
+              return tuple(int(part) for part in core.split("."))
+
+          if parse_semver(openupm_metadata["minVersion"]) > parse_semver(unity_manifest["version"]):
+              raise SystemExit("OpenUPM minVersion cannot be greater than the Unity package version")
+
+          print(f"Validated OpenUPM metadata for {openupm_metadata['name']}")
+          PY
+
+      - name: Create Unity release asset
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p release-assets
+          tar -czf "release-assets/com.unifybuild.editor-${version}.tgz" -C unity com.unifybuild.editor
+
+      - name: Prepare OpenUPM onboarding assets
+        run: |
+          mkdir -p release-assets/openupm
+          cp openupm/com.unifybuild.editor.yml release-assets/openupm/
+
+      - name: Upload Unity release assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: unity-release-assets
+          path: |
+            release-assets/*.tgz
+            release-assets/openupm/*.yml
+
+  github-release:
+    name: Publish GitHub Release
+    needs:
+      - nuget-release
+      - unity-package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download NuGet release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-release-assets
+          path: release-assets
+
+      - name: Download Unity release assets
+        uses: actions/download-artifact@v4
+        with:
+          name: unity-release-assets
+          path: release-assets
+
       - name: Generate release changelog
         id: changelog
         uses: orhun/git-cliff-action@v3
@@ -126,7 +297,10 @@ jobs:
           name: ${{ github.ref_name }}
           body_path: CHANGES.md
           files: |
-            dotnet/artifacts/*.nupkg
-            dotnet/artifacts/_manifest/spdx_2.2/manifest.spdx.json
+            release-assets/*.nupkg
+            release-assets/*.json
+            release-assets/*.tgz
+            release-assets/openupm/*.yml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

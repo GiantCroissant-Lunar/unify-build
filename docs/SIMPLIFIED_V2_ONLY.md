@@ -43,7 +43,7 @@ return LoadConfig(...);
 
 ## Package Info
 
-**Package**: `UnifyBuild.Nuke.2.0.0.nupkg` ✅
+**Package**: `UnifyBuild.Nuke.0.2.0.nupkg` ✅
 **Build**: Successful
 **Breaking Change**: Yes - v1 configs no longer work
 
@@ -125,9 +125,9 @@ N/A (file naming is now unversioned).
 
 Since you control all consumers (mung-bean*), can do atomic migration:
 
-1. Publish UnifyBuild.Nuke 2.0.0
+1. Publish UnifyBuild.Nuke 0.2.0
 2. Update all mung-bean* build configs simultaneously
-3. Update all mung-bean* to reference 2.0.0
+3. Update all mung-bean* to reference 0.2.0
 4. Test builds
 5. Commit all changes together
 

@@ -4,6 +4,16 @@
 
 UnifyBuild is a .NET build orchestration system built on [NUKE](https://nuke.build). It uses composable **component interfaces** to define build targets and a JSON-driven **BuildContext** to configure them. The CLI tool (`dotnet unify-build`) composes these components into a single `NukeBuild` class.
 
+## Distribution Surfaces
+
+The repository exposes three public artifacts:
+
+- `UnifyBuild.Nuke` is the foundation NuGet package. It contains config loading, runtime models, validation, and reusable build components.
+- `UnifyBuild.Tool` is the NuGet-distributed CLI. It composes the exported interfaces from `UnifyBuild.Nuke` into the `dotnet unify-build` entrypoint.
+- `com.unifybuild.editor` is the standalone Unity package under `unity/com.unifybuild.editor`. It contains editor-side batch-mode entrypoints invoked by the .NET orchestration layer.
+
+This split is intentional: Unity build/export orchestration remains in the .NET layer because it runs outside the Unity editor, while Unity editor automation is packaged separately as a UPM/OpenUPM-friendly asset.
+
 ```
 ┌─────────────────────────────────────────────────────┐
 │                  UnifyBuild.Tool                     │
@@ -135,6 +145,8 @@ BuildContext     (AbsolutePath, resolved arrays, computed defaults)
 3. Converting relative paths to `AbsolutePath` values
 4. Discovering projects in each `ProjectGroup` via `DiscoverProjectsInGroup()`
 5. Creating sub-contexts (`NativeBuildContext`, `RustBuildContext`, `GoBuildContext`, `UnityBuildContext`)
+
+When Unity export automation is configured, the runtime context bridges the two release surfaces: the .NET side resolves the paths and orchestration data, then invokes editor entrypoints shipped in `com.unifybuild.editor`.
 
 ### BuildJsonConfig (Deserialization Model)
 

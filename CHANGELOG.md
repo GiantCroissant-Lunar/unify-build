@@ -1,11 +1,11 @@
 # Changelog
 
-## 3.0.0
+## 0.3.2
 
 ### Breaking Changes
 
-- **v1 flat config deprecated**: The `hostsDir`, `pluginsDir`, `contractsDir`, and related `include*`/`exclude*` properties are deprecated. Use `projectGroups` instead. These properties still work but emit warnings and will be removed in v4.0.
-- **`UnifyBuildBase` class deprecated**: Use the composable `IUnify*` component interfaces directly. `UnifyBuildBase` will be removed in v4.0.
+- **v1 flat config deprecated**: The `hostsDir`, `pluginsDir`, `contractsDir`, and related `include*`/`exclude*` properties are deprecated. Use `projectGroups` instead. These properties still work but emit warnings and will be removed in v0.4.0.
+- **`UnifyBuildBase` class deprecated**: Use the composable `IUnify*` component interfaces directly. `UnifyBuildBase` will be removed in v0.4.0.
 - **`$schema` reference recommended**: New configs should include `"$schema": "./build.config.schema.json"` for IDE IntelliSense and validation.
 
 ### Added
@@ -35,7 +35,7 @@
 - v1 config properties (`hostsDir`, `pluginsDir`, `contractsDir`, `includeHosts`, `excludeHosts`, `includePlugins`, `excludePlugins`, `includeContracts`, `excludeContracts`)
 - `UnifyBuildBase` class — use `IUnify*` interfaces instead
 
-## 2.0.0
+## 0.2.0
 
 - Added build config schema (`projectGroups`).
 - `projectGroups` is now required; legacy v1 configs are no longer supported.

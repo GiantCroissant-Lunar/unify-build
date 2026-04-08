@@ -19,7 +19,7 @@
 
   <!-- Reference local UnifyBuild.Nuke package -->
   <ItemGroup>
-    <PackageReference Include="UnifyBuild.Nuke" Version="3.0.0" />
+    <PackageReference Include="UnifyBuild.Nuke" Version="0.3.2" />
   </ItemGroup>
 
   <!-- Add local package source -->

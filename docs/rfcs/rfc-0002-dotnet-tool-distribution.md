@@ -277,7 +277,7 @@ src/
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>unify-build</ToolCommandName>
     <PackageId>UnifyBuild.Tool</PackageId>
-    <Version>3.0.0</Version>
+    <Version>0.3.0</Version>
     <Authors>plate</Authors>
     <Description>CLI tool for running UnifyBuild targets from build.config.json without a Nuke build project.</Description>
   </PropertyGroup>
@@ -334,7 +334,7 @@ The tool is distributed as a .NET tool package (`UnifyBuild.Tool`), installable 
 
 ```bash
 # Local tool (recommended — version pinned per repo)
-dotnet tool install UnifyBuild.Tool --version 3.0.0
+dotnet tool install UnifyBuild.Tool --version 0.3.0
 
 # Global tool (for convenience / CI agents)
 dotnet tool install -g UnifyBuild.Tool
@@ -348,7 +348,7 @@ Consumer repositories should use **local tool manifests** (`.config/dotnet-tools
   "isRoot": true,
   "tools": {
     "unifybuild.tool": {
-      "version": "3.0.0",
+    "version": "0.3.0",
       "commands": ["unify-build"]
     }
   }
@@ -374,7 +374,7 @@ Consumer repositories should use **local tool manifests** (`.config/dotnet-tools
 1. Create `src/UnifyBuild.Tool/` with `Build : NukeBuild, IUnify`
 2. Add pack configuration for the tool in `build.config.json` (`projectGroups`)
 3. Validate the tool works against unify-build's own `build.config.json` (dogfooding)
-4. Publish both `UnifyBuild.Nuke` (v3.0.0) and `UnifyBuild.Tool` (v3.0.0)
+4. Publish both `UnifyBuild.Nuke` (v0.3.0) and `UnifyBuild.Tool` (v0.3.0)
 
 ### Phase 3: Consumer Migration
 

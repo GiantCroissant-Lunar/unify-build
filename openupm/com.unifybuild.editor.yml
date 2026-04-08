@@ -1,0 +1,20 @@
+# Canonical metadata for onboarding `com.unifybuild.editor` into the OpenUPM curated package list.
+# The Unity package root in this monorepo is `unity/com.unifybuild.editor`.
+# If OpenUPM reviewers request an explicit package-path field, use that path during submission.
+name: com.unifybuild.editor
+displayName: UnifyBuild Editor
+description: Unity editor entry points for UnifyBuild-driven batch mode builds and exports across desktop and mobile targets.
+repoUrl: https://github.com/unifybuild/unifybuild
+parentRepoUrl: null
+licenseSpdxId: MIT
+licenseName: MIT License
+image: ''
+topics:
+  - editor-enhancement
+  - automation
+  - package-management
+hunter: plate
+gitTagPrefix: v
+gitTagIgnore: ''
+minVersion: 0.3.2
+readme: 'main:unity/com.unifybuild.editor/README.md'

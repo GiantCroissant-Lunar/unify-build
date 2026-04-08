@@ -57,6 +57,7 @@ nav:
       - Unity Build: examples/unity-build.md
   - Migration Guide: migration-guide.md
   - Architecture: architecture.md
+  - Releasing: releasing.md
   - Telemetry: telemetry.md
   - Contributing: contributing.md
   - Troubleshooting: troubleshooting.md

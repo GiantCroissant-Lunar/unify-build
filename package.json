@@ -4,7 +4,8 @@
   "private": true,
   "description": "UnifyBuild - Unified build configuration system",
   "scripts": {
-    "repomix": "repomix"
+    "repomix": "repomix",
+    "release:bump-version": "pwsh -NoProfile -ExecutionPolicy Bypass -File build/bump-version.ps1"
   },
   "devDependencies": {
     "repomix": "^0.2.0"

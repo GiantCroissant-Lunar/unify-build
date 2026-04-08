@@ -839,7 +839,7 @@ public static class BuildContextLoader
                       ?? cfg.ArtifactsVersion
                       ?? "0.1.0";
 
-        var artifactsVersion = cfg.ArtifactsVersion ?? version;
+        string artifactsVersion = cfg.ArtifactsVersion ?? version ?? "0.1.0";
 
         // Compute default NuGet output directory if not specified
         AbsolutePath? nugetOutputDir = null;
@@ -886,6 +886,8 @@ public static class BuildContextLoader
                 }
             }
         }
+
+        ArgumentNullException.ThrowIfNull(artifactsVersion);
 
         // Convert v2 ProjectGroups to v1-compatible BuildContext
         var context = new BuildContext

@@ -169,6 +169,20 @@ public class BuildContextLoaderTests : IDisposable
     }
 
     [Fact]
+    public void FromJson_NativeBuild_DefaultPaths_UseRepoRootAndArtifactsVersion()
+    {
+        _temp.CreateFile("build.config.json", "{\"artifactsVersion\": \"7.2.1\", \"projectGroups\": {}}");
+        _temp.CreateFile("native/CMakeLists.txt", "cmake_minimum_required(VERSION 3.20)");
+
+        var ctx = BuildContextLoader.FromJson(RepoRoot);
+
+        ctx.NativeBuild.Should().NotBeNull();
+        ctx.NativeBuild!.CMakeSourceDir.Should().Be(RepoRoot / "native");
+        ctx.NativeBuild.CMakeBuildDir.Should().Be(RepoRoot / "native" / "build");
+        ctx.NativeBuild.OutputDir.Should().Be(RepoRoot / "build" / "_artifacts" / "7.2.1" / "native");
+    }
+
+    [Fact]
     public void FromJson_NativeBuild_NullWhenNoCMakeListsAndNoConfig()
     {
         _temp.CreateFile("build.config.json", "{\"projectGroups\": {}}");

@@ -231,7 +231,7 @@ public sealed class ProjectGroup
 
 ## Migration Strategy
 
-### Phase 1: Dual Schema Support (v2.0.0)
+### Phase 1: Dual Schema Support (v0.2.0)
 
 1. **Add v2 schema alongside v1**
    - Create `BuildJsonConfigV2` and `ProjectGroup` classes
@@ -268,12 +268,12 @@ public sealed class ProjectGroup
 3. **Migrate example projects** in unify-build docs to v2 schema
 4. **Downstream projects migrate at their own pace**
 
-### Phase 3: v1 Schema Removal (v3.0.0, breaking change)
+### Phase 3: v1 Schema Removal (v0.4.0, breaking change)
 
 1. Remove `BuildJsonConfig` (v1) class entirely
 2. Rename `BuildJsonConfigV2` → `BuildJsonConfig`
 3. Update all documentation
-4. Publish v3.0.0 as major version with breaking changes
+4. Publish v0.4.0 as the planned pre-1.0 breaking release
 
 ## Implementation Checklist
 
@@ -302,7 +302,7 @@ public sealed class ProjectGroup
 
 ### Phase 2: Dogfooding Validation (Proves Schema is Generic)
 
-**Prerequisite:** Phase 1 complete, UnifyBuild.Nuke v2.0.0 published to local NuGet feed
+**Prerequisite:** Phase 1 complete, UnifyBuild.Nuke v0.2.0 published to local NuGet feed
 
 **Create config for unify-build:**
 - [ ] Create `build/build.config.json`:
@@ -323,7 +323,7 @@ public sealed class ProjectGroup
   ```
 
 **Migrate unify-build's Build.cs:**
-- [ ] Update `build/nuke/build/_build.csproj` to reference `UnifyBuild.Nuke` v2.0.0 package
+- [ ] Update `build/nuke/build/_build.csproj` to reference `UnifyBuild.Nuke` v0.2.0 package
 - [ ] Rewrite `build/nuke/build/Build.cs` to inherit from `UnifyBuildBase`:
   ```csharp
   class Build : UnifyBuildBase
@@ -351,13 +351,13 @@ public sealed class ProjectGroup
 - [ ] Ensure v1 schema continues to work (backward compatibility)
 - [ ] Provide migration examples in documentation
 
-### Phase 4: Deprecation (Future v3.0.0)
+### Phase 4: Deprecation (Future v0.4.0)
 
 **After 6-month migration period:**
 - [ ] Remove v1 schema classes (breaking change)
 - [ ] Rename `BuildJsonConfigV2` → `BuildJsonConfig`
 - [ ] Update all documentation
-- [ ] Release as UnifyBuild.Nuke v3.0.0
+- [ ] Release as UnifyBuild.Nuke v0.4.0
 
 ## Affected Projects
 
@@ -374,9 +374,9 @@ public sealed class ProjectGroup
 
 - **Week 1-2**: Implement v2 schema in unify-build (Phase 1)
 - **Week 3**: Test v2 schema with example configs
-- **Week 4**: Release unify-build v2.0.0 with dual schema support
+- **Week 4**: Release unify-build v0.2.0 with dual schema support
 - **Months 2-6**: Migration period, downstream projects update configs (Phase 2)
-- **Month 7+**: Evaluate v1 schema removal for v3.0.0 (Phase 3)
+- **Month 7+**: Evaluate v1 schema removal for v0.4.0 (Phase 3)
 
 ## Open Questions
 
