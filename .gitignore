@@ -36,3 +36,5 @@ mobile/**/.bundle/
 
 # Temp build scripts
 build-*.ps1
+
+.env
