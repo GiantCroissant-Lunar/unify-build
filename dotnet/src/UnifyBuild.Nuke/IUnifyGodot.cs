@@ -233,8 +233,19 @@ public interface IUnifyGodot : IUnifyCompile
             File.Delete(exportPath);
             ZipFile.CreateFromDirectory(tempExtract, exportPath, CompressionLevel.Optimal, includeBaseDirectory: false);
 
+            // Also leave the extracted .app bundle alongside the .zip so it
+            // is directly runnable for local development without an extra
+            // unzip step. The .zip is kept for distribution / CI artifact
+            // use cases that expect a single-file output.
+            var appName = Path.GetFileName(appBundle);
+            var outAppPath = exportPath.Parent / appName;
+            if (Directory.Exists(outAppPath))
+                Directory.Delete(outAppPath, recursive: true);
+            CopyDirectoryRecursively((AbsolutePath)appBundle, outAppPath, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
+
             var dllCount = Directory.GetFiles(resourcesDir, "*.dll").Length;
-            global::Serilog.Log.Information($"Injected {dllCount} DLLs -> {Path.GetFileName(appBundle)}/Contents/Resources/{dataDirName}/");
+            global::Serilog.Log.Information($"Injected {dllCount} DLLs -> {appName}/Contents/Resources/{dataDirName}/");
+            global::Serilog.Log.Information($"Extracted runnable bundle -> {outAppPath}");
         }
         tempExtract.DeleteDirectory();
     }
