@@ -20,6 +20,15 @@ tasks:
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
+      - echo "Seeding build/_artifacts/build.config.schema.json (required by UnifyBuild.Nuke.csproj at pack time)..."
+      - cmd: |
+          mkdir -p build/_artifacts
+          cp build/build.config.schema.json build/_artifacts/build.config.schema.json
+        platforms: [linux, darwin]
+      - cmd: |
+          if not exist build\_artifacts mkdir build\_artifacts
+          copy /Y build\build.config.schema.json build\_artifacts\build.config.schema.json
+        platforms: [windows]
       - echo "Packing local UnifyBuild.Nuke package..."
       - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Nuke/UnifyBuild.Nuke.csproj -o build/_artifacts/local/flat
       - echo "Packing local UnifyBuild.Tool package..."
