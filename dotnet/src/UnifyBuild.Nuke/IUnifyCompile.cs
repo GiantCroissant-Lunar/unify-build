@@ -19,9 +19,19 @@ public interface IUnifyCompile : IUnifyBuildConfig
             if (UnifyConfig.Solution is null)
                 return;
 
-            DotNetBuild(s => s
-                .SetProjectFile(UnifyConfig.Solution)
-                .SetConfiguration(Configuration));
+            DotNetBuild(s =>
+            {
+                s = s
+                    .SetProjectFile(UnifyConfig.Solution)
+                    .SetConfiguration(Configuration);
+
+                if (!string.IsNullOrWhiteSpace(UnifyConfig.Version))
+                {
+                    s = s.SetProperty("Version", UnifyConfig.Version);
+                }
+
+                return s;
+            });
         });
 
     /// <summary>
@@ -36,9 +46,19 @@ public interface IUnifyCompile : IUnifyBuildConfig
                     ? project
                     : (UnifyConfig.RepoRoot / project).ToString();
 
-                DotNetBuild(s => s
-                    .SetProjectFile(projectPath)
-                    .SetConfiguration(Configuration));
+                DotNetBuild(s =>
+                {
+                    s = s
+                        .SetProjectFile(projectPath)
+                        .SetConfiguration(Configuration);
+
+                    if (!string.IsNullOrWhiteSpace(UnifyConfig.Version))
+                    {
+                        s = s.SetProperty("Version", UnifyConfig.Version);
+                    }
+
+                    return s;
+                });
             }
         });
 }
