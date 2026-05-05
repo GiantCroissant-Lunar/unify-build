@@ -16,5 +16,5 @@
     "GeneratePackageOnBuild": "false"
   },
   "syncLocalNugetFeed": true,
-  "localNugetFeedRoot": "build/_artifacts"
+  "localNugetFeedRoot": "C:\\lunar-horse\\packages\\nuget"
 }
