@@ -24,23 +24,23 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
         .Executes(() =>
         {
             var configDir = RootDirectory / ".config";
-            
+
             try
             {
                 Serilog.Log.Information("Installing QuickType via npm in {ConfigDir}...", configDir);
-                
+
                 // Run npm install in the .config directory
                 var result = ProcessTasks.StartProcess(
                     "npm",
                     "install",
                     configDir
                 ).AssertWaitForExit();
-                
+
                 if (result.ExitCode != 0)
                 {
                     throw new Exception($"npm install failed with exit code {result.ExitCode}");
                 }
-                
+
                 Serilog.Log.Information("QuickType installed successfully");
             }
             catch (Exception ex)
@@ -78,14 +78,14 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
         var configDir = RootDirectory / ".config";
         var nodeModulesDir = configDir / "node_modules";
         var quicktypeDir = nodeModulesDir / "quicktype";
-        
+
         // Check if node_modules/quicktype exists
         if (!Directory.Exists(quicktypeDir))
         {
             Serilog.Log.Debug("QuickType not found at {QuickTypeDir}", quicktypeDir);
             return false;
         }
-        
+
         // Verify the quicktype executable exists
         var quicktypeBin = quicktypeDir / "dist" / "index.js";
         if (!File.Exists(quicktypeBin))
@@ -93,7 +93,7 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
             Serilog.Log.Debug("QuickType binary not found at {QuickTypeBin}", quicktypeBin);
             return false;
         }
-        
+
         Serilog.Log.Debug("QuickType is already installed");
         return true;
     }
@@ -122,9 +122,9 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
             var file = fileLineMatch.Groups[1].Value;
             var line = fileLineMatch.Groups[2].Value;
             var column = fileLineMatch.Groups[3].Success ? fileLineMatch.Groups[3].Value : null;
-            
-            return column != null 
-                ? $"{file} at line {line}, column {column}" 
+
+            return column != null
+                ? $"{file} at line {line}, column {column}"
                 : $"{file} at line {line}";
         }
 
@@ -234,21 +234,21 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
             if (result.ExitCode != 0)
             {
                 var errorOutput = string.Join(Environment.NewLine, result.Output.Select(o => o.Text));
-                
+
                 // Extract file path and line number from QuickType error output if present
                 // QuickType error format typically includes patterns like "file.cs:line:column" or "at line X"
                 var lineInfo = ExtractLineInfoFromError(errorOutput);
-                var lineInfoMessage = !string.IsNullOrEmpty(lineInfo) 
-                    ? $"\nError location: {lineInfo}" 
+                var lineInfoMessage = !string.IsNullOrEmpty(lineInfo)
+                    ? $"\nError location: {lineInfo}"
                     : "";
-                
+
                 Serilog.Log.Error(
                     "QuickType failed to parse C# source file (exit code {ExitCode}).\n" +
                     "Source file: {SourceFile}{LineInfo}\n" +
                     "Error output:\n{ErrorOutput}",
                     result.ExitCode, sourceFile, lineInfoMessage, errorOutput
                 );
-                
+
                 throw new Exception(
                     $"QuickType failed to generate schema (exit code {result.ExitCode}).\n" +
                     $"Source file: {sourceFile}{lineInfoMessage}\n" +
@@ -340,7 +340,7 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
             // Read and parse schema content as JSON
             var schemaContent = File.ReadAllText(schemaFile);
             JsonDocument schema;
-            
+
             try
             {
                 schema = JsonDocument.Parse(schemaContent);
