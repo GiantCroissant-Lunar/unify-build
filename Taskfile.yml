@@ -19,7 +19,7 @@ tasks:
     desc: Print the GitVersion-derived version (MajorMinorPatch with optional -N distance suffix)
     cmds:
       - cmd: |
-          VER=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); print(f"{base}-{n}" if n>0 else base)')
+          VER=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); sys.stdout.write(f"{base}-{n}" if n>0 else base)')
           echo "$VER"
 
   pack:
@@ -30,7 +30,7 @@ tasks:
     cmds:
       - cmd: dotnet tool restore
       - cmd: |
-          export GITVERSION_MAJORMINORPATCH=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); print(f"{base}-{n}" if n>0 else base)')
+          export GITVERSION_MAJORMINORPATCH=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); sys.stdout.write(f"{base}-{n}" if n>0 else base)')
           echo "[pack] GITVERSION_MAJORMINORPATCH=${GITVERSION_MAJORMINORPATCH}"
           dotnet tool run unify-build -- PackProjects --configuration {{.CONFIGURATION}}
           mkdir -p "{{.LOCAL_FEED}}"
@@ -47,7 +47,7 @@ tasks:
           mkdir -p build/_artifacts
           cp build/build.config.schema.json build/_artifacts/build.config.schema.json
       - cmd: |
-          VER=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); print(f"{base}-{n}" if n>0 else base)')
+          VER=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); sys.stdout.write(f"{base}-{n}" if n>0 else base)')
           echo "[tool:bootstrap-local] Packing at version ${VER}"
           dotnet pack -c {{.CONFIGURATION}} -p:Version="${VER}" dotnet/src/UnifyBuild.Nuke/UnifyBuild.Nuke.csproj -o build/_artifacts/local/flat
           dotnet pack -c {{.CONFIGURATION}} -p:Version="${VER}" dotnet/src/UnifyBuild.Tool/UnifyBuild.Tool.csproj -o build/_artifacts/local/flat
