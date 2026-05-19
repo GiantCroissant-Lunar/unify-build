@@ -62,6 +62,19 @@ public sealed record BuildContext
     public Dictionary<string, string> PackProperties { get; init; } = new();
 
     /// <summary>
+    /// When true, the SyncLocalFeed target copies packed nupkgs to LocalNugetFeedRoot
+    /// after Pack completes. Set in build.config.json via "syncLocalNugetFeed": true.
+    /// </summary>
+    public bool SyncLocalNugetFeed { get; init; } = false;
+
+    /// <summary>
+    /// Destination directory for local NuGet feed sync. Resolved from the
+    /// build.config.json "localNugetFeedRoot" string: absolute paths are used as-is;
+    /// relative paths resolve against the repository root.
+    /// </summary>
+    public AbsolutePath? LocalNugetFeedRoot { get; init; }
+
+    /// <summary>
     /// Native (CMake) build configuration.
     /// </summary>
     public NativeBuildContext? NativeBuild { get; init; }

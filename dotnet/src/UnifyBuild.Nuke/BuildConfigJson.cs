@@ -911,6 +911,8 @@ public static class BuildContextLoader
             PackProjects = packProjects.ToArray(),
             PackIncludeSymbols = cfg.PackIncludeSymbols,
             PackProperties = cfg.PackProperties ?? new Dictionary<string, string>(),
+            SyncLocalNugetFeed = cfg.SyncLocalNugetFeed,
+            LocalNugetFeedRoot = ResolveLocalFeedRoot(repoRoot, cfg.LocalNugetFeedRoot),
             NativeBuild = CreateNativeBuildContext(repoRoot, cfg.NativeBuild, artifactsVersion),
             RustBuild = CreateRustBuildContext(repoRoot, cfg.RustBuild, artifactsVersion),
             GoBuild = CreateGoBuildContext(repoRoot, cfg.GoBuild, artifactsVersion),
@@ -1309,4 +1311,15 @@ public static class BuildContextLoader
 
     private static string? GetEnv(string? name)
         => string.IsNullOrWhiteSpace(name) ? null : Environment.GetEnvironmentVariable(name);
+
+    /// <summary>
+    /// Resolve a local NuGet feed root path from build.config.json. Absolute paths
+    /// are used as-is; relative paths resolve against the repository root.
+    /// Returns null if the input is null or whitespace.
+    /// </summary>
+    private static AbsolutePath? ResolveLocalFeedRoot(AbsolutePath repoRoot, string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return null;
+        return Path.IsPathRooted(path) ? (AbsolutePath)path : repoRoot / path;
+    }
 }
