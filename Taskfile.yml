@@ -15,26 +15,44 @@ tasks:
     cmds:
       - pwsh -NoProfile -ExecutionPolicy Bypass -File build/bump-version.ps1 -Version {{.VERSION}}
 
+  version:
+    desc: Print the GitVersion-derived version (MajorMinorPatch with optional -N distance suffix)
+    cmds:
+      - cmd: |
+          VER=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); print(f"{base}-{n}" if n>0 else base)')
+          echo "$VER"
+
+  pack:
+    desc: Pack UnifyBuild.{Nuke,Tool} via unify-build at the GitVersion-driven version and sync to the local feed
+    vars:
+      CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+      LOCAL_FEED: '{{default "C:/lunar-horse/packages/nuget" .LOCAL_FEED}}'
+    cmds:
+      - cmd: dotnet tool restore
+      - cmd: |
+          export GITVERSION_MAJORMINORPATCH=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); print(f"{base}-{n}" if n>0 else base)')
+          echo "[pack] GITVERSION_MAJORMINORPATCH=${GITVERSION_MAJORMINORPATCH}"
+          dotnet tool run unify-build -- PackProjects --configuration {{.CONFIGURATION}}
+          mkdir -p "{{.LOCAL_FEED}}"
+          cp build/_artifacts/${GITVERSION_MAJORMINORPATCH}/nuget/*.nupkg "{{.LOCAL_FEED}}/"
+          echo "[pack] Synced nupkgs to {{.LOCAL_FEED}}/"
+
   tool:bootstrap-local:
-    desc: Pack local UnifyBuild packages and install/update the repo tool manifest from the local flat feed
+    desc: Pack local UnifyBuild packages and install/update the repo tool manifest from the local flat feed (bootstrap when no published tool is available)
     vars:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
-      - echo "Seeding build/_artifacts/build.config.schema.json (required by UnifyBuild.Nuke.csproj at pack time)..."
       - cmd: |
+          echo "Seeding build/_artifacts/build.config.schema.json (required by UnifyBuild.Nuke.csproj at pack time)..."
           mkdir -p build/_artifacts
           cp build/build.config.schema.json build/_artifacts/build.config.schema.json
-        platforms: [linux, darwin]
       - cmd: |
-          if not exist build\_artifacts mkdir build\_artifacts
-          copy /Y build\build.config.schema.json build\_artifacts\build.config.schema.json
-        platforms: [windows]
-      - echo "Packing local UnifyBuild.Nuke package..."
-      - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Nuke/UnifyBuild.Nuke.csproj -o build/_artifacts/local/flat
-      - echo "Packing local UnifyBuild.Tool package..."
-      - dotnet pack -c {{.CONFIGURATION}} dotnet/src/UnifyBuild.Tool/UnifyBuild.Tool.csproj -o build/_artifacts/local/flat
-      - echo "Installing local tool manifest from build/_artifacts/local/flat..."
-      - dotnet tool install --local --add-source build/_artifacts/local/flat UnifyBuild.Tool || dotnet tool update --local --add-source build/_artifacts/local/flat UnifyBuild.Tool
+          VER=$(bash tools/gitversion.sh | python -c 'import sys,json; d=json.loads(sys.stdin.read()); base=d["MajorMinorPatch"]; n=int(d.get("CommitsSinceVersionSource") or 0); print(f"{base}-{n}" if n>0 else base)')
+          echo "[tool:bootstrap-local] Packing at version ${VER}"
+          dotnet pack -c {{.CONFIGURATION}} -p:Version="${VER}" dotnet/src/UnifyBuild.Nuke/UnifyBuild.Nuke.csproj -o build/_artifacts/local/flat
+          dotnet pack -c {{.CONFIGURATION}} -p:Version="${VER}" dotnet/src/UnifyBuild.Tool/UnifyBuild.Tool.csproj -o build/_artifacts/local/flat
+          echo "[tool:bootstrap-local] Installing local tool manifest from build/_artifacts/local/flat (version ${VER})..."
+          dotnet tool install --local --version "${VER}" --add-source build/_artifacts/local/flat UnifyBuild.Tool || dotnet tool update --local --version "${VER}" --allow-downgrade --add-source build/_artifacts/local/flat UnifyBuild.Tool
 
   hub:install-hooks:
     desc: Install pre-commit hooks from lunar-snake-hub into .git/hooks

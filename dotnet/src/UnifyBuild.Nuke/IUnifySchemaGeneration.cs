@@ -20,7 +20,7 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
     /// </summary>
     Target InstallQuickTypeTool => _ => _
         .Description("Install QuickType as a local npm tool")
-        .OnlyWhenDynamic(() => !IsQuickTypeInstalled())
+        .OnlyWhenDynamic(() => (RootDirectory / "dotnet" / "src" / "UnifyBuild.Nuke" / "BuildConfigJson.cs").FileExists() && !IsQuickTypeInstalled())
         .Executes(() =>
         {
             var configDir = RootDirectory / ".config";
@@ -400,6 +400,7 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
     /// </summary>
     Target GenerateSchema => _ => _
         .Description("Generate JSON schema from BuildConfigJson.cs")
+        .OnlyWhenDynamic(() => (RootDirectory / "dotnet" / "src" / "UnifyBuild.Nuke" / "BuildConfigJson.cs").FileExists())
         .DependsOn(InstallQuickTypeTool)
         .Before<IUnifyPack>(x => x.Pack)
         .Executes(() =>

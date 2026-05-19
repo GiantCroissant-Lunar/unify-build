@@ -9,7 +9,6 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>unify-build</ToolCommandName>
     <PackageId>UnifyBuild.Tool</PackageId>
-    <Version>0.3.2</Version>
     <Authors>plate</Authors>
     <Description>CLI tool for running UnifyBuild targets from build.config.json without a Nuke build project.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>

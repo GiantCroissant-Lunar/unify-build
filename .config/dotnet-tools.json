@@ -3,12 +3,18 @@
   "isRoot": true,
   "tools": {
     "unifybuild.tool": {
-      "version": "0.3.2",
-      "commands": ["unify-build"]
+      "version": "0.1.0-1",
+      "commands": [
+        "unify-build"
+      ],
+      "rollForward": false
     },
     "gitversion.tool": {
       "version": "6.6.0",
-      "commands": ["dotnet-gitversion"]
+      "commands": [
+        "dotnet-gitversion"
+      ],
+      "rollForward": false
     }
   }
 }
