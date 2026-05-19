@@ -21,7 +21,9 @@ repos:
     hooks:
       - id: dotnet-format
         name: dotnet format
-        entry: dotnet format --verify-no-changes
+        # Workspace path is required when running from repo root since there's no .sln here;
+        # the solution lives at dotnet/UnifyBuild.sln.
+        entry: dotnet format dotnet/UnifyBuild.sln --verify-no-changes
         language: system
         types: [c#]
         pass_filenames: false
