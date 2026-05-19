@@ -1,6 +1,5 @@
 workflow: GitHubFlow/v1
 mode: ContinuousDeployment
-next-version: 0.1.0
 strategies:
 - ConfiguredNextVersion
 - Mainline
