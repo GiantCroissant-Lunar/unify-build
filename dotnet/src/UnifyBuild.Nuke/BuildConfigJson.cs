@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Nuke.Common.IO;
 
 namespace UnifyBuild.Nuke;
@@ -837,9 +839,19 @@ public static class BuildContextLoader
                       ?? externalVersion
                       ?? GetEnv("GITVERSION_MAJORMINORPATCH")
                       ?? cfg.ArtifactsVersion
-                      ?? "0.1.0";
+                      ?? TryDeriveVersionFromGit(repoRoot);
 
-        string artifactsVersion = cfg.ArtifactsVersion ?? version ?? "0.1.0";
+        if (version is null)
+        {
+            global::Serilog.Log.Warning(
+                "[unify-build] No version source resolved (config 'version', env '{VersionEnv}', " +
+                "env 'GITVERSION_MAJORMINORPATCH', config 'artifactsVersion', or git) — defaulting to 0.1.0. " +
+                "Tag the repository or set the version env to stamp a real SemVer.",
+                cfg.VersionEnv ?? "Version");
+            version = "0.1.0";
+        }
+
+        string artifactsVersion = cfg.ArtifactsVersion ?? version;
 
         // Compute default NuGet output directory if not specified
         AbsolutePath? nugetOutputDir = null;
@@ -1311,6 +1323,122 @@ public static class BuildContextLoader
 
     private static string? GetEnv(string? name)
         => string.IsNullOrWhiteSpace(name) ? null : Environment.GetEnvironmentVariable(name);
+
+    /// <summary>
+    /// Derives a SemVer from the consumer repository's own git state when no explicit
+    /// version was supplied via config or environment. Mirrors the resolver used by the
+    /// Godot app repos (tools/gitversion-semver.ps1): prefer GitVersion when it reports a
+    /// real <c>VersionSourceSha</c>, otherwise fall back to <c>git describe</c> — bumping
+    /// the patch because the commits are ahead of the tag. This keeps the version correct
+    /// for any git repo even when the build is invoked directly (bypassing a Taskfile/CI
+    /// that would otherwise export the version env), instead of silently stamping 0.1.0.
+    /// </summary>
+    /// <param name="repoRoot">
+    /// The consumer repository root (NUKE RootDirectory). All git commands run against this
+    /// path explicitly (<c>git -C</c>), so the version always reflects the consumer repo and
+    /// never an enclosing repository or the build tool's own checkout.
+    /// </param>
+    /// <returns>
+    /// The derived SemVer, or null when <paramref name="repoRoot"/> is not a git work tree,
+    /// git is unavailable, or no version tag can be found — letting the caller apply its
+    /// own default.
+    /// </returns>
+    internal static string? TryDeriveVersionFromGit(AbsolutePath repoRoot)
+    {
+        // Only derive inside an actual git work tree. Keeps non-git consumers (and unit-test
+        // temp dirs) on their configured default path rather than reading a parent repo.
+        if (RunProcess("git", $"-C \"{repoRoot}\" rev-parse --is-inside-work-tree", repoRoot)?.Trim() != "true")
+            return null;
+
+        // 1. Prefer GitVersion when it has resolved a real VersionSourceSha (clean repos / CI).
+        var gvJson = RunProcess("dotnet", "tool run dotnet-gitversion /output json", repoRoot);
+        if (!string.IsNullOrWhiteSpace(gvJson))
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(gvJson);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("VersionSourceSha", out var sha)
+                    && sha.ValueKind == JsonValueKind.String
+                    && !string.IsNullOrWhiteSpace(sha.GetString())
+                    && root.TryGetProperty("SemVer", out var sem)
+                    && sem.ValueKind == JsonValueKind.String
+                    && !string.IsNullOrWhiteSpace(sem.GetString()))
+                {
+                    return sem.GetString();
+                }
+            }
+            catch (JsonException)
+            {
+                // Unparseable GitVersion output — fall through to git describe.
+            }
+        }
+
+        // 2. Fall back to `git describe`. Handles the empty-VersionSourceSha trap that confuses
+        //    GitVersion in agent-driven repos (e.g. internal refs/codex/* pointing at trees).
+        var describe = RunProcess("git", $"-C \"{repoRoot}\" describe --tags --long --always", repoRoot)?.Trim();
+        if (!string.IsNullOrWhiteSpace(describe))
+        {
+            var m = Regex.Match(describe, @"^v?(\d+)\.(\d+)\.(\d+)-(\d+)-g[0-9a-fA-F]+$");
+            if (m.Success)
+            {
+                var major = m.Groups[1].Value;
+                var minor = m.Groups[2].Value;
+                var patch = int.Parse(m.Groups[3].Value) + 1; // commits are ahead of the tagged patch
+                var commits = m.Groups[4].Value;
+                return $"{major}.{minor}.{patch}-{commits}";
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Runs a child process and returns its trimmed stdout on a zero exit, or null on any
+    /// failure (process missing, non-zero exit, or timeout). stdout and stderr are drained
+    /// concurrently to avoid pipe-buffer deadlocks. Never throws — callers treat null as
+    /// "could not determine" and fall back.
+    /// </summary>
+    private static string? RunProcess(string fileName, string arguments, AbsolutePath workingDirectory)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = arguments,
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                },
+            };
+
+            if (!process.Start())
+                return null;
+
+            var stdoutTask = process.StandardOutput.ReadToEndAsync();
+            var stderrTask = process.StandardError.ReadToEndAsync();
+
+            if (!process.WaitForExit(15_000))
+            {
+                try { process.Kill(entireProcessTree: true); } catch { /* best effort */ }
+                return null;
+            }
+
+            var stdout = stdoutTask.GetAwaiter().GetResult();
+            stderrTask.GetAwaiter().GetResult();
+            return process.ExitCode == 0 ? stdout : null;
+        }
+        catch
+        {
+            // git / dotnet not on PATH, or the process otherwise failed to launch.
+            return null;
+        }
+    }
 
     /// <summary>
     /// Resolve a local NuGet feed root path from build.config.json. Absolute paths
