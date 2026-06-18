@@ -393,10 +393,6 @@
         "binaryName": {
           "type": "string",
           "default": ""
-        },
-        "dataDirName": {
-          "type": "string",
-          "default": ""
         }
       }
     }

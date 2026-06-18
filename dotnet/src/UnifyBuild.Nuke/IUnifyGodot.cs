@@ -5,9 +5,6 @@ using System.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tooling;
-using Nuke.Common.Tools.DotNet;
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.Tools.DotNet.DotNetTasks;
 using System.Text.Json;
 
 namespace UnifyBuild.Nuke;
@@ -125,17 +122,13 @@ public interface IUnifyGodot : IUnifyCompile
         var outDir = artifactsDir / rid;
         outDir.CreateOrCleanDirectory();
 
-        var publishOut = config.ProjectRoot / ".godot" / "mono" / "temp" / "bin" / Configuration / $"publish-{rid}";
-
-        global::Serilog.Log.Information($"Publishing .NET for {rid} (self-contained)...");
-        DotNetPublish(s => s
-            .SetProject(csproj)
-            .SetConfiguration(Configuration)
-            .SetRuntime(rid)
-            .EnableSelfContained()
-            .SetOutput(publishOut)
-            .SetProcessArgumentConfigurator(a => a.Add("-v quiet"))
-        );
+        // Godot's C# export plugin (GodotTools.Export.ExportPlugin) already runs
+        // `dotnet publish` per target architecture during --export-release and
+        // writes the output into per-arch data_* directories inside the bundle
+        // (e.g. data_<assembly>_macos_arm64, data_<assembly>_macos_x86_64).
+        // Doing a separate dotnet publish + DLL injection here was redundant and
+        // wrong: it only targeted a single data dir and overwrote Godot's
+        // correctly-published per-arch DLLs with a single-arch publish output.
 
         var exportPath = outDir / platform.BinaryName;
         global::Serilog.Log.Information($"Exporting [{rid}] -> {platform.PresetName}...");
@@ -154,22 +147,13 @@ public interface IUnifyGodot : IUnifyCompile
                 throw new InvalidOperationException($"Export failed for {rid} — no binary at {exportPath}", ex);
         }
 
-        // Inject .NET DLLs into the export
-        if (Directory.Exists(publishOut))
+        // macOS exports produce a .zip. Extract it so the .app bundle is
+        // directly runnable without a manual unzip step. The .zip is kept
+        // for distribution/CI use cases that expect a single-file artifact.
+        if (exportPath.Extension == ".zip" && File.Exists(exportPath))
         {
-            if (rid.StartsWith("osx", StringComparison.OrdinalIgnoreCase))
-            {
-                InjectDllsIntoMacBundle(publishOut, exportPath, assemblyName, platform);
-            }
-            else
-            {
-                var dataDirName = platform.DataDirName.Replace("{AssemblyName}", assemblyName);
-                var dataDir = outDir / dataDirName;
-                dataDir.CreateDirectory();
-                CopyDirectoryRecursively(publishOut, dataDir, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
-                var dllCount = Directory.GetFiles(dataDir, "*.dll").Length;
-                global::Serilog.Log.Information($"Copied {dllCount} DLLs -> {dataDirName}/");
-            }
+            ZipFile.ExtractToDirectory(exportPath, outDir, overwriteFiles: true);
+            global::Serilog.Log.Information($"Extracted runnable bundle -> {outDir}");
         }
 
         WriteVersionJson(outDir, semver, rid, platform.PresetName);
@@ -214,40 +198,6 @@ public interface IUnifyGodot : IUnifyCompile
 
         global::Serilog.Log.Information("Exported {Rid} native project to {OutDir}. " +
             "Use MobileBuildAndroidFromProject or MobileBuildIosFromProject to build with Fastlane.", rid, outDir);
-    }
-
-    sealed void InjectDllsIntoMacBundle(
-        AbsolutePath publishOut, AbsolutePath exportPath,
-        string assemblyName, GodotExportPlatformContext platform)
-    {
-        var tempExtract = (AbsolutePath)Path.GetTempPath() / $"godot-mac-inject-{Guid.NewGuid():N}";
-        ZipFile.ExtractToDirectory(exportPath, tempExtract);
-        var appBundle = Directory.GetDirectories(tempExtract, "*.app").FirstOrDefault();
-        if (appBundle != null)
-        {
-            var dataDirName = platform.DataDirName.Replace("{AssemblyName}", assemblyName);
-            var resourcesDir = (AbsolutePath)appBundle / "Contents" / "Resources" / dataDirName;
-            resourcesDir.CreateDirectory();
-            CopyDirectoryRecursively(publishOut, resourcesDir, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
-
-            File.Delete(exportPath);
-            ZipFile.CreateFromDirectory(tempExtract, exportPath, CompressionLevel.Optimal, includeBaseDirectory: false);
-
-            // Also leave the extracted .app bundle alongside the .zip so it
-            // is directly runnable for local development without an extra
-            // unzip step. The .zip is kept for distribution / CI artifact
-            // use cases that expect a single-file output.
-            var appName = Path.GetFileName(appBundle);
-            var outAppPath = exportPath.Parent / appName;
-            if (Directory.Exists(outAppPath))
-                Directory.Delete(outAppPath, recursive: true);
-            CopyDirectoryRecursively((AbsolutePath)appBundle, outAppPath, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
-
-            var dllCount = Directory.GetFiles(resourcesDir, "*.dll").Length;
-            global::Serilog.Log.Information($"Injected {dllCount} DLLs -> {appName}/Contents/Resources/{dataDirName}/");
-            global::Serilog.Log.Information($"Extracted runnable bundle -> {outAppPath}");
-        }
-        tempExtract.DeleteDirectory();
     }
 
     sealed void WriteVersionJson(AbsolutePath outDir, string semver, string rid, string presetName)

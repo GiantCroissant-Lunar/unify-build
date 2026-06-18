@@ -602,7 +602,9 @@ public sealed class GodotBuildConfig
 public sealed class GodotExportPlatformConfig
 {
     /// <summary>
-    /// The .NET Runtime Identifier (RID) to publish for (e.g., win-x64, linux-x64, osx-universal).
+    /// The .NET Runtime Identifier (RID) for the platform (e.g., win-x64, linux-x64, osx).
+    /// Used for the output directory name and version metadata only; Godot's own
+    /// C# export plugin handles per-arch `dotnet publish` during --export-release.
     /// </summary>
     public string Rid { get; set; } = "";
 
@@ -612,14 +614,9 @@ public sealed class GodotExportPlatformConfig
     public string PresetName { get; set; } = "";
 
     /// <summary>
-    /// The name of the binary file to export (e.g., "GiantIsopod.exe").
+    /// The name of the binary file to export (e.g., "complete-app.zip").
     /// </summary>
     public string BinaryName { get; set; } = "";
-
-    /// <summary>
-    /// The Godot data directory suffix. Can include {AssemblyName} placeholder.
-    /// </summary>
-    public string DataDirName { get; set; } = "";
 }
 
 /// <summary>
@@ -946,8 +943,7 @@ public static class BuildContextLoader
         {
             Rid = p.Rid,
             PresetName = p.PresetName,
-            BinaryName = p.BinaryName,
-            DataDirName = p.DataDirName
+            BinaryName = p.BinaryName
         }).ToArray() ?? Array.Empty<GodotExportPlatformContext>();
 
         return new GodotBuildContext

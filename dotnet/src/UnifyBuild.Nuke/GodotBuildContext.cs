@@ -35,7 +35,6 @@ public sealed record GodotExportPlatformContext
     public string Rid { get; init; } = "";
     public string PresetName { get; init; } = "";
     public string BinaryName { get; init; } = "";
-    public string DataDirName { get; init; } = "";
 
     /// <summary>
     /// Whether this is a mobile platform (android, ios).
