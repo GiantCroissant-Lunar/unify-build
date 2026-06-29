@@ -16,5 +16,5 @@
     "GeneratePackageOnBuild": "false"
   },
   "syncLocalNugetFeed": true,
-  "localNugetFeedRoot": "/Users/apprenticegc/Work/lunar-horse/packages/nuget"
+  "localNugetFeedRoot": "../../packages/nuget"
 }
