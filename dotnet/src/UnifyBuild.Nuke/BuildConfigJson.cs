@@ -768,14 +768,8 @@ public static class BuildContextLoader
     /// <returns>BuildContext representing the configuration</returns>
     public static BuildContext FromJson(AbsolutePath repoRoot, string configFile, string? externalVersion)
     {
-        // Support both root-level and build/ directory configs
-        var path = repoRoot / configFile;
-        if (!File.Exists(path))
-        {
-            var buildDirPath = repoRoot / "build" / configFile;
-            if (File.Exists(buildDirPath))
-                path = buildDirPath;
-        }
+        // Use the shared resolver so build targets and validation share the same discovery rules.
+        var path = BuildConfigResolver.ResolveConfigPath(repoRoot, configFile);
         if (!File.Exists(path))
             throw new InvalidOperationException($"Build config file '{path}' not found.");
 

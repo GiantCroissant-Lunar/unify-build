@@ -51,7 +51,13 @@ public sealed class DoctorCommand
     /// Executes all doctor checks against the repository root.
     /// When autoFix is true, attempts to automatically resolve fixable issues.
     /// </summary>
-    public DoctorResult Execute(AbsolutePath repoRoot, bool autoFix)
+    /// <param name="repoRoot">Repository root directory.</param>
+    /// <param name="autoFix">Whether to automatically fix fixable issues.</param>
+    /// <param name="configPath">
+    /// Optional explicit configuration file path. When omitted, the doctor discovers
+    /// the config using the same rules as normal build targets.
+    /// </param>
+    public DoctorResult Execute(AbsolutePath repoRoot, bool autoFix, AbsolutePath? configPath = null)
     {
         var checks = new List<DoctorCheck>();
         var fixedCount = 0;
@@ -63,19 +69,19 @@ public sealed class DoctorCommand
         checks.Add(CheckNukeInstalled());
 
         // 3. build.config.json exists
-        var configPath = repoRoot / "build.config.json";
+        configPath ??= BuildConfigResolver.ResolveConfigPath(repoRoot);
         var configExistsCheck = CheckConfigExists(configPath);
         checks.Add(configExistsCheck);
 
         if (configExistsCheck.Status == DoctorStatus.Fail && autoFix && configExistsCheck.AutoFixable)
         {
-            if (TryFixMissingConfig(repoRoot))
+            if (TryFixMissingConfig(repoRoot, configPath))
             {
                 fixedCount++;
                 checks[checks.Count - 1] = configExistsCheck with
                 {
                     Status = DoctorStatus.Pass,
-                    Message = "build.config.json created via init command."
+                    Message = $"build.config.json created via init command at {configPath}."
                 };
             }
         }
@@ -499,20 +505,22 @@ public sealed class DoctorCommand
 
     /// <summary>
     /// Attempts to fix a missing build.config.json by running InitCommand.
+    /// Creates the config at the resolved path's directory to avoid duplicate root files.
     /// </summary>
-    private static bool TryFixMissingConfig(AbsolutePath repoRoot)
+    private static bool TryFixMissingConfig(AbsolutePath repoRoot, AbsolutePath configPath)
     {
         try
         {
+            var outputDirectory = Path.GetDirectoryName(configPath) ?? repoRoot;
             var initCommand = new InitCommand();
             var options = new InitOptions(
-                OutputPath: repoRoot,
+                OutputPath: outputDirectory,
                 Interactive: false,
                 Template: null,
                 Force: false
             );
             initCommand.Execute(repoRoot, options);
-            Log.Information("Auto-fix: Created build.config.json via init command.");
+            Log.Information("Auto-fix: Created build.config.json via init command at {ConfigPath}.", configPath);
             return true;
         }
         catch (Exception ex)

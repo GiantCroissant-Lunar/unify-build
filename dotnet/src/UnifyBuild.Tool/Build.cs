@@ -95,7 +95,7 @@ class Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity, IUnifyGodot, IUnifyS
         .Executes(() =>
         {
             var command = new ValidateCommand();
-            var configPath = RootDirectory / "build.config.json";
+            var configPath = BuildConfigResolver.ResolveConfigPath(RootDirectory, Config);
             var result = command.Execute(configPath, RootDirectory);
 
             if (!result.IsValid)
@@ -117,7 +117,8 @@ class Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity, IUnifyGodot, IUnifyS
         .Executes(() =>
         {
             var command = new DoctorCommand();
-            var result = command.Execute(RootDirectory, Fix);
+            var configPath = BuildConfigResolver.ResolveConfigPath(RootDirectory, Config);
+            var result = command.Execute(RootDirectory, Fix, configPath);
 
             foreach (var check in result.Checks)
             {
