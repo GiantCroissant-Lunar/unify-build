@@ -10,8 +10,8 @@
     <Authors>plate</Authors>
     <Description>Reusable Nuke-based build framework for hosts/plugins and versioned artifacts.</Description>
     <PackageReadmeFile>README.md</PackageReadmeFile>
-    <PackageProjectUrl>https://github.com/unifybuild/unifybuild</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/unifybuild/unifybuild</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/GiantCroissant-Lunar/unify-build</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/GiantCroissant-Lunar/unify-build</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>build;nuke;dotnet;native;unity;ci;cd</PackageTags>

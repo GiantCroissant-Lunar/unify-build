@@ -1,6 +1,6 @@
 # UnifyBuild VS Code Extension
 
-VS Code extension for the [UnifyBuild](https://github.com/unifybuild/unifybuild) .NET build orchestration system.
+VS Code extension for the [UnifyBuild](https://github.com/GiantCroissant-Lunar/unify-build) .NET build orchestration system.
 
 ## Features
 

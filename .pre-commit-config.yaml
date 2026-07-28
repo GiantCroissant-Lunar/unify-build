@@ -32,4 +32,5 @@ repos:
         entry: cmd /c npm run repomix
         language: system
         pass_filenames: false
-        always_run: false
+        stages: [manual]
+        # Run manually: pre-commit run repomix --hook-stage manual
