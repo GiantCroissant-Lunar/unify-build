@@ -1,6 +1,6 @@
-# Test Consumer Project
+# UnifyBuild Package Integration Tests
 
-This is a minimal test project that verifies the UnifyBuild.Nuke package correctly deploys the `build.config.schema.json` file to consumer projects.
+This integration-test project verifies that the UnifyBuild.Nuke package correctly deploys the `build.config.schema.json` file to consumer projects.
 
 ## Purpose
 
@@ -36,7 +36,7 @@ The test project:
 From the sample project directory:
 
 ```bash
-cd dotnet/samples/consumer-test
+cd dotnet/tests/UnifyBuild.Package.Tests
 dotnet restore
 dotnet test
 ```
@@ -44,7 +44,7 @@ dotnet test
 Or from the repository root:
 
 ```bash
-dotnet test dotnet/samples/consumer-test/TestConsumer.csproj
+dotnet test dotnet/tests/UnifyBuild.Package.Tests/UnifyBuild.Package.Tests.csproj
 ```
 
 ## Expected Results
@@ -66,7 +66,7 @@ To test Requirement 7.3 (schema updates when package is updated):
 1. Install version 0.3.2 of the package
 2. Verify the schema file exists
 3. Build a new version of the package (e.g., 0.3.3)
-4. Update the package reference in TestConsumer.csproj
+4. Update the package reference in `UnifyBuild.Package.Tests.csproj`
 5. Run `dotnet restore` to update the package
 6. Verify the schema file is updated with the new version
 
@@ -86,7 +86,7 @@ If the schema file is not found in the project root:
 If the package cannot be restored:
 
 1. Verify the package exists in `build/_artifacts/local/flat/`
-2. Check the RestoreAdditionalProjectSources path in TestConsumer.csproj
+2. Check the `RestoreAdditionalProjectSources` path in `UnifyBuild.Package.Tests.csproj`
 3. Try clearing the NuGet cache: `dotnet nuget locals all --clear`
 
 ## Notes

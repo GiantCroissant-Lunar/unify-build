@@ -11,6 +11,6 @@ Use these documents for feature-level requirements, design notes, and execution 
 
 ## Relationship to Other Docs
 
-- Use [Architecture](../architecture.md) for the current system shape.
-- Use [RFCs](../rfcs/rfc-0001-generic-build-schema.md) for proposed architectural changes.
+- Use [Architecture](../architecture/index.md) for the current system shape.
+- Use [RFCs](../architecture/rfcs/rfc-0001-generic-build-schema.md) for proposed architectural changes.
 - Use [Archive](../archive/index.md) for superseded reviews, removed behavior notes, and historical progress documents.

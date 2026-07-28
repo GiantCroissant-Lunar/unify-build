@@ -263,7 +263,7 @@ public sealed class ProjectGroup
    ```
    [WARN] Build config using legacy schema (HostsDir, PluginsDir).
           Consider migrating to v2 schema (projectGroups).
-          See docs/rfcs/rfc-0001-generic-build-schema.md
+          See docs/architecture/rfcs/rfc-0001-generic-build-schema.md
    ```
 3. **Migrate example projects** in unify-build docs to v2 schema
 4. **Downstream projects migrate at their own pace**

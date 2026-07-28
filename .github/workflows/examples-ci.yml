@@ -4,9 +4,15 @@ on:
   push:
     paths:
       - 'examples/**'
+      - 'build/build.config.schema.json'
+      - 'dotnet/src/UnifyBuild.Nuke/**'
+      - 'dotnet/tests/UnifyBuild.Nuke.Tests/**'
   pull_request:
     paths:
       - 'examples/**'
+      - 'build/build.config.schema.json'
+      - 'dotnet/src/UnifyBuild.Nuke/**'
+      - 'dotnet/tests/UnifyBuild.Nuke.Tests/**'
 
 jobs:
   validate-dotnet-examples:
@@ -69,41 +75,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install jsonschema validator
-        run: npm install -g ajv-cli ajv-formats
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-      - name: Validate dotnet-library config
-        run: |
-          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
-            -d examples/dotnet-library/build.config.json \
-            --strict=false || true
-
-      - name: Validate dotnet-application config
-        run: |
-          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
-            -d examples/dotnet-application/build.config.json \
-            --strict=false || true
-
-      - name: Validate native-cmake config
-        run: |
-          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
-            -d examples/native-cmake/build.config.json \
-            --strict=false || true
-
-      - name: Validate unity-project config
-        run: |
-          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
-            -d examples/unity-project/build.config.json \
-            --strict=false || true
-
-      - name: Validate monorepo config
-        run: |
-          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
-            -d examples/monorepo/build.config.json \
-            --strict=false || true
-
-      - name: Validate multi-target config
-        run: |
-          ajv validate -s dotnet/samples/consumer-test/build.config.schema.json \
-            -d examples/multi-target/build.config.json \
-            --strict=false || true
+      - name: Validate all public example configs
+        run: >
+          dotnet test dotnet/tests/UnifyBuild.Nuke.Tests/UnifyBuild.Nuke.Tests.csproj
+          --configuration Release
+          --filter FullyQualifiedName~BuildConfigSchemaGeneratorTests

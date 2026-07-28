@@ -56,9 +56,9 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
     - _Requirements: 3.1, 3.7_
 
   - [x] 1.9 Create initial documentation structure
-    - Create `docs/getting-started.md` with installation instructions, minimal Build_Config example, and common commands
-    - Create `docs/configuration-reference.md` documenting all `build.config.json` properties
-    - Create `docs/troubleshooting.md` with common errors and fixes
+    - Create `docs/guides/getting-started.md` with installation instructions, minimal Build_Config example, and common commands
+    - Create `docs/reference/configuration-reference.md` documenting all `build.config.json` properties
+    - Create `docs/guides/troubleshooting.md` with common errors and fixes
     - Update `README.md` with getting-started guide and links to docs
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.12_
 
@@ -133,7 +133,7 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
     - Add `cliff.toml` or equivalent config for `git-cliff` changelog generation
     - Create `CHANGELOG.md` in repository root
     - Add changelog generation step to release workflow
-    - Document conventional commit format in `docs/contributing.md`
+    - Document conventional commit format in `docs/guides/contributing.md`
     - _Requirements: 15.1, 15.2, 15.3, 15.4, 15.5, 15.6, 15.7, 15.8, 15.9, 15.10_
 
   - [x] 3.10 Implement MigrateCommand for backward compatibility
@@ -334,8 +334,8 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
     - **Validates: Requirements 14.6, 14.7**
 
   - [x] 7.12 Create extensibility documentation
-    - Create `docs/architecture.md` explaining component design and Build_Context extension points
-    - Create `docs/contributing.md` with contribution guidelines for extending Component_Interfaces
+    - Create `docs/architecture/index.md` explaining component design and Build_Context extension points
+    - Create `docs/guides/contributing.md` with contribution guidelines for extending Component_Interfaces
     - Document how to create custom Component_Interfaces with Docker and Terraform examples
     - Document how to add custom Build_Config properties and test custom components
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5, 13.8, 13.9, 13.10, 2.13, 2.14_
@@ -376,7 +376,7 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
   - [x] 9.5 Implement optional telemetry
     - Add opt-in telemetry config to `ObservabilityConfig` (disabled by default)
     - Implement anonymous data collection respecting user privacy
-    - Document what telemetry data is collected in `docs/telemetry.md`
+    - Document what telemetry data is collected in `docs/reference/telemetry.md`
     - _Requirements: 14.8, 14.9, 14.10, 14.11, 14.12_
 
   - [x] 9.6 Add dependency license scanning
@@ -413,7 +413,7 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
   - [x] 11.4 Add distributed build cache support
     - Extend `BuildCache` with distributed cache upload/download via configurable URL
     - Add retry with backoff for network failures
-    - Document caching configuration and best practices in `docs/caching.md`
+    - Document caching configuration and best practices in `docs/reference/caching.md`
     - Add cache statistics to build output
     - _Requirements: 12.6, 12.7, 12.8, 12.10, 12.11, 12.12_
 
@@ -423,7 +423,7 @@ This plan implements 22 requirements across 6 phases, progressing from P0 founda
     - _Requirements: 12.9, 12.10_
 
   - [x] 11.6 Create migration guide and breaking changes documentation
-    - Create `docs/migration-guide.md` for v1 → v2 schema migration
+    - Create `docs/guides/migration-guide.md` for v1 → v2 schema migration
     - Document all breaking changes in CHANGELOG.md
     - _Requirements: 2.7, 22.6, 22.11_
 

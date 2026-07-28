@@ -3,7 +3,7 @@ using System.IO.Compression;
 using System.Text.Json;
 using Xunit;
 
-namespace TestConsumer;
+namespace UnifyBuild.Package.Tests;
 
 /// <summary>
 /// Integration tests to verify the complete end-to-end workflow of automated JSON schema generation.

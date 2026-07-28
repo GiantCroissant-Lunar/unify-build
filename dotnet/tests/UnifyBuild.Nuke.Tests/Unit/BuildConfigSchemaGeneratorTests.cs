@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using FluentAssertions;
+using NJsonSchema;
 using Xunit;
 
 namespace UnifyBuild.Nuke.Tests.Unit;
@@ -62,7 +63,7 @@ public class BuildConfigSchemaGeneratorTests
         {
             Path.Combine(repositoryRoot, "build", "build.config.schema.json"),
             Path.Combine(repositoryRoot, "vscode-extension", "schemas", "build.config.schema.json"),
-            Path.Combine(repositoryRoot, "dotnet", "samples", "consumer-test", "build.config.schema.json"),
+            Path.Combine(repositoryRoot, "dotnet", "tests", "UnifyBuild.Package.Tests", "build.config.schema.json"),
         };
 
         foreach (var schemaCopy in schemaCopies)
@@ -70,6 +71,26 @@ public class BuildConfigSchemaGeneratorTests
             File.ReadAllText(schemaCopy)
                 .Replace("\r\n", "\n", StringComparison.Ordinal)
                 .Should().Be(generatedSchema, $"{schemaCopy} should be generated from BuildJsonConfig");
+        }
+    }
+
+    [Fact]
+    public async Task Generate_ValidatesEveryPublicExample()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var schema = await JsonSchema.FromJsonAsync(BuildConfigSchemaGenerator.Generate());
+        var exampleConfigs = Directory.GetFiles(
+            Path.Combine(repositoryRoot, "examples"),
+            "build.config.json",
+            SearchOption.AllDirectories);
+
+        exampleConfigs.Should().NotBeEmpty();
+        foreach (var exampleConfig in exampleConfigs)
+        {
+            var errors = schema.Validate(await File.ReadAllTextAsync(exampleConfig));
+            errors.Should().BeEmpty(
+                $"{exampleConfig} should match the schema:{Environment.NewLine}"
+                + string.Join(Environment.NewLine, errors.Select(error => $"{error.Path}: {error.Kind}")));
         }
     }
 

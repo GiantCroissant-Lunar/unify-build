@@ -1,5 +1,5 @@
 {
-  "$schema": "../../dotnet/samples/consumer-test/build.config.schema.json",
+  "$schema": "../../build/build.config.schema.json",
   "solution": "DotnetApp.sln",
   "projectGroups": {
     "hosts": {

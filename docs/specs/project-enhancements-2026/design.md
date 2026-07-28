@@ -367,7 +367,7 @@ dotnet/tests/UnifyBuild.Nuke.Tests/
     └── SampleConfigs/
 ```
 
-**Framework**: xUnit (already used in consumer-test) + FsCheck.Xunit for property-based testing.
+**Framework**: xUnit (already used in the package integration tests) + FsCheck.Xunit for property-based testing.
 
 ### Requirement 7: Integration and Performance Tests (P1)
 
@@ -755,7 +755,7 @@ All errors use structured `DiagnosticMessage` objects with categorized error cod
 
 ### Error Handling Strategy by Component
 
-**BuildContextLoader**: Catches `JsonException` and wraps with line/column info + `UB101` code. Catches `FileNotFoundException` and wraps with searched paths + `UB100` code. All errors include a docs link to `docs/troubleshooting.md`.
+**BuildContextLoader**: Catches `JsonException` and wraps with line/column info + `UB101` code. Catches `FileNotFoundException` and wraps with searched paths + `UB100` code. All errors include a docs link to `docs/guides/troubleshooting.md`.
 
 **ConfigValidator**: Returns `ValidationResult` with accumulated issues rather than throwing. Each issue has severity, code, message, file path, line number, and suggestion.
 
@@ -790,7 +790,7 @@ The testing strategy uses both unit tests and property-based tests:
 
 ### Test Framework
 
-- **Unit/Integration**: xUnit (already used in `dotnet/samples/consumer-test/`)
+- **Unit/Integration**: xUnit (already used in `dotnet/tests/UnifyBuild.Package.Tests/`)
 - **Property-Based**: FsCheck.Xunit — mature .NET PBT library with xUnit integration
 - **Mocking**: NSubstitute for interface mocking where needed
 - **Assertions**: xUnit built-in + FluentAssertions for readable assertions

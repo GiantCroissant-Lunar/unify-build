@@ -92,4 +92,4 @@ Packages are written to `build/_artifacts/{version}/nuget/`.
 
 - Use `include` to limit which projects get packed — test projects and benchmarks should be excluded.
 - Set `packIncludeSymbols: true` for better debugging experience for consumers.
-- Version is resolved automatically from GitVersion or the `version` / `artifactsVersion` properties. See [Configuration Reference](../configuration-reference.md#version-resolution) for the full resolution order.
+- Version is resolved automatically from GitVersion or the `version` / `artifactsVersion` properties. See [Configuration Reference](../reference/configuration-reference.md#version-resolution) for the full resolution order.

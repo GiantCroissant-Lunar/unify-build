@@ -132,4 +132,4 @@ Set `autoDetectVcpkg: false` (or omit it) if you manage dependencies another way
 
 - **CMake not found** — Install CMake and ensure it's in your PATH. Run `cmake --version` to verify.
 - **vcpkg not detected** — UnifyBuild looks for `vcpkg/scripts/buildsystems/vcpkg.cmake` relative to the repo root. Set `VCPKG_ROOT` or place vcpkg as a submodule.
-- **Build errors** — Run with `--verbosity verbose` to see the full CMake commands. Try running them manually to isolate the issue. See [Troubleshooting](../troubleshooting.md#ub202--native-build-failed) for more details.
+- **Build errors** — Run with `--verbosity verbose` to see the full CMake commands. Try running them manually to isolate the issue. See [Troubleshooting](../guides/troubleshooting.md#ub202-native-build-failed) for more details.

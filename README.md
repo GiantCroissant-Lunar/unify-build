@@ -132,10 +132,10 @@ For a comprehensive example, see [`build/build.config.example.json`](build/build
 
 ## Documentation
 
-- [Getting Started](docs/getting-started.md) — installation, first config, and common commands
-- [Configuration Reference](docs/configuration-reference.md) — all `build.config.json` properties
-- [Releasing](docs/releasing.md) — bump versions, tag releases, and OpenUPM onboarding
-- [Troubleshooting](docs/troubleshooting.md) — common errors and fixes
+- [Getting Started](docs/guides/getting-started.md) — installation, first config, and common commands
+- [Configuration Reference](docs/reference/configuration-reference.md) — all `build.config.json` properties
+- [Releasing](docs/guides/releasing.md) — bump versions, tag releases, and OpenUPM onboarding
+- [Troubleshooting](docs/guides/troubleshooting.md) — common errors and fixes
 - [Examples](docs/examples/) — end-to-end project examples
 
 Repository-only dogfooding and fixture projects live under `fixtures/`. Public, documented consumer examples stay under `examples/`.

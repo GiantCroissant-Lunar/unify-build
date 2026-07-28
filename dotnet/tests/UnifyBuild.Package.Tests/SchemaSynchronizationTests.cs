@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Xunit;
 
-namespace TestConsumer;
+namespace UnifyBuild.Package.Tests;
 
 /// <summary>
 /// Integration tests to verify that the JSON schema stays synchronized with BuildConfigJson.cs.

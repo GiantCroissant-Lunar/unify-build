@@ -47,7 +47,7 @@ UnifyBuild uses structured error codes prefixed with `UB` for programmatic handl
 
 **Fix:**
 1. Add `"$schema": "./build.config.schema.json"` to your config for IDE autocomplete.
-2. Check the [Configuration Reference](./configuration-reference.md) for valid property names and types.
+2. Check the [Configuration Reference](../reference/configuration-reference.md) for valid property names and types.
 3. Run `dotnet unify-build validate` for specific schema violation details.
 
 ### UB103 — Project Not Found
@@ -182,7 +182,7 @@ UnifyBuild uses structured error codes prefixed with `UB` for programmatic handl
 
 **Fix:**
 1. Run `dotnet unify-build validate` for detailed validation output with line numbers.
-2. Check the [Configuration Reference](./configuration-reference.md) for correct property types.
+2. Check the [Configuration Reference](../reference/configuration-reference.md) for correct property types.
 3. Ensure you're using the schema version that matches your UnifyBuild package version.
 
 ---

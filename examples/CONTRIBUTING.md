@@ -13,7 +13,7 @@ We welcome community contributions of new example projects.
    - Commands to build/run the example
 4. Keep implementations minimal — just enough to demonstrate the pattern
 5. Include a `.sln` file if the example has .NET projects
-6. Reference the shared schema: `"$schema": "../../dotnet/samples/consumer-test/build.config.schema.json"`
+6. Reference the shared schema: `"$schema": "../../build/build.config.schema.json"`
 
 ## Validation
 

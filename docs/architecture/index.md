@@ -194,7 +194,7 @@ public sealed record BuildContext
 
 ### 1. Adding a New Component Interface
 
-Create a new interface extending `IUnifyBuildConfig` with one or more `Target` properties. See [Contributing Guide](contributing.md) for a step-by-step walkthrough.
+Create a new interface extending `IUnifyBuildConfig` with one or more `Target` properties. See the [Contributing Guide](../guides/contributing.md) for a step-by-step walkthrough.
 
 ### 2. Adding New Config Properties
 

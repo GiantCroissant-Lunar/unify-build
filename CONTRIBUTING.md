@@ -10,7 +10,7 @@ loading utilities under `UnifyBuild.Nuke`.
 - `src/UnifyBuild.Nuke/` – NUKE helper library + build config schema loader
 - `build/nuke/` – NUKE build entrypoint for this repo
 - `build/build.config.json` – build config used for dogfooding
-- `docs/rfcs/` – design notes / RFCs
+- `docs/architecture/rfcs/` – design notes / RFCs
 
 ## Development workflow
 
@@ -36,8 +36,8 @@ loading utilities under `UnifyBuild.Nuke`.
 
    See:
 
-   - `docs/rfcs/rfc-0001-generic-build-schema.md`
-   - `docs/SIMPLIFIED_V2_ONLY.md`
+   - `docs/architecture/rfcs/rfc-0001-generic-build-schema.md`
+   - `docs/archive/reviews/SIMPLIFIED_V2_ONLY.md`
 
 ## Pull requests
 

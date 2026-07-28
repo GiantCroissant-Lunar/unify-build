@@ -44,7 +44,7 @@ public static class BuildContextLoader
         {
             throw new InvalidOperationException(
                 "Build config must use 'projectGroups' schema. "
-                + "See docs/rfcs/rfc-0001-generic-build-schema.md for schema documentation.");
+                + "See docs/architecture/rfcs/rfc-0001-generic-build-schema.md for schema documentation.");
         }
 
         // Check for deprecated v1 properties and log warnings

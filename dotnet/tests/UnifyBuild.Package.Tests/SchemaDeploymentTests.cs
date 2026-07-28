@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Xunit;
 
-namespace TestConsumer;
+namespace UnifyBuild.Package.Tests;
 
 /// <summary>
 /// Integration tests to verify that the build.config.schema.json file is properly

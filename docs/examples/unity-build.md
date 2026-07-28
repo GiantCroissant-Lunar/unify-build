@@ -333,4 +333,4 @@ ls src/Contracts/Contracts.csproj
 - `src/Contracts/*` matches `.csproj` files in immediate subdirectories of `src/Contracts/`
 - Ensure the directories exist and contain `.csproj` files
 
-See [Troubleshooting](../troubleshooting.md#ub203--unity-build-failed) for more error codes and solutions.
+See [Troubleshooting](../guides/troubleshooting.md#ub203-unity-build-failed) for more error codes and solutions.

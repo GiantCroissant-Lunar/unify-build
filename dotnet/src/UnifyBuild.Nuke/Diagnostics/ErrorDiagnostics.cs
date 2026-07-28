@@ -8,7 +8,7 @@ namespace UnifyBuild.Nuke.Diagnostics;
 /// </summary>
 public static class ErrorDiagnostics
 {
-    private const string DocsBaseUrl = "https://github.com/nicepkg/UnifyBuild/blob/main/docs/troubleshooting.md";
+    private const string DocsBaseUrl = "https://github.com/GiantCroissant-Lunar/unify-build/blob/main/docs/guides/troubleshooting.md";
 
     /// <summary>
     /// Creates a diagnostic from a <see cref="JsonException"/> encountered while parsing a config file.

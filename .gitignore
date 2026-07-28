@@ -51,7 +51,6 @@ build-*.ps1
 .kilocode/
 .kiro/
 .opencode/
-.qwen/
 .windsurf/
 CLAUDE.md
 GEMINI.md

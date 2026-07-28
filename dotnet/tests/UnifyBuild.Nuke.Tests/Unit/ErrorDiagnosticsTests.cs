@@ -11,7 +11,7 @@ namespace UnifyBuild.Nuke.Tests.Unit;
 /// </summary>
 public class ErrorDiagnosticsTests
 {
-    private const string DocsBaseUrl = "https://github.com/nicepkg/UnifyBuild/blob/main/docs/troubleshooting.md";
+    private const string DocsBaseUrl = "https://github.com/GiantCroissant-Lunar/unify-build/blob/main/docs/guides/troubleshooting.md";
 
     #region FromJsonException
 

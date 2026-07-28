@@ -286,25 +286,25 @@
         "enabled": {
           "type": "boolean"
         },
-        "cMakeSourceDir": {
+        "cmakeSourceDir": {
           "type": [
             "null",
             "string"
           ]
         },
-        "cMakeBuildDir": {
+        "cmakeBuildDir": {
           "type": [
             "null",
             "string"
           ]
         },
-        "cMakePreset": {
+        "cmakePreset": {
           "type": [
             "null",
             "string"
           ]
         },
-        "cMakeOptions": {
+        "cmakeOptions": {
           "type": [
             "array",
             "null"

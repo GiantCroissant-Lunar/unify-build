@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace UnifyBuild.Nuke;
 
 /// <summary>
@@ -13,21 +15,25 @@ public sealed class NativeBuildConfig
     /// <summary>
     /// Source directory containing CMakeLists.txt. Default: "native"
     /// </summary>
+    [JsonPropertyName("cmakeSourceDir")]
     public string? CMakeSourceDir { get; set; }
 
     /// <summary>
     /// Build directory for CMake. Default: "native/build"
     /// </summary>
+    [JsonPropertyName("cmakeBuildDir")]
     public string? CMakeBuildDir { get; set; }
 
     /// <summary>
     /// CMake preset name to use (requires CMakePresets.json).
     /// </summary>
+    [JsonPropertyName("cmakePreset")]
     public string? CMakePreset { get; set; }
 
     /// <summary>
     /// Additional CMake configuration options.
     /// </summary>
+    [JsonPropertyName("cmakeOptions")]
     public string[]? CMakeOptions { get; set; }
 
     /// <summary>

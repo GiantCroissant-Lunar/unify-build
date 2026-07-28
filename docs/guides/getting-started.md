@@ -140,7 +140,7 @@ UnifyBuild uses **project groups** to organize your builds. Each group specifies
 }
 ```
 
-For the full list of properties, see the [Configuration Reference](./configuration-reference.md).
+For the full list of properties, see the [Configuration Reference](../reference/configuration-reference.md).
 
 ## Native and Unity Builds
 
@@ -173,12 +173,12 @@ Unity export flows are intentionally split across two artifacts:
 - `dotnet unify-build` owns the external orchestration targets such as `BuildForUnity` and `UnityExport`.
 - `com.unifybuild.editor` supplies the Unity editor methods those targets call in batch mode.
 
-See the [examples](./examples/) directory for complete walkthroughs.
+See the [.NET library example](../examples/dotnet-library.md) and the other example walkthroughs for complete projects.
 
 Internal dogfooding projects and engine-specific fixtures live under `fixtures/`. They are useful for repository validation, but they are not treated as the public example surface.
 
 ## Next Steps
 
-- [Configuration Reference](./configuration-reference.md) — all `build.config.json` properties
+- [Configuration Reference](../reference/configuration-reference.md) — all `build.config.json` properties
 - [Troubleshooting](./troubleshooting.md) — common errors and how to fix them
-- [Examples](./examples/) — end-to-end project examples
+- [Examples](../examples/dotnet-library.md) — end-to-end project examples

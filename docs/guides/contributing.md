@@ -1,6 +1,6 @@
 # Extending UnifyBuild
 
-This guide covers how to extend UnifyBuild with custom component interfaces, config properties, and tests. For general contribution guidelines (PR process, commit conventions, code style), see the root [CONTRIBUTING.md](../CONTRIBUTING.md).
+This guide covers how to extend UnifyBuild with custom component interfaces, config properties, and tests. For general contribution guidelines (PR process, commit conventions, code style), see the root [CONTRIBUTING.md](https://github.com/GiantCroissant-Lunar/unify-build/blob/main/CONTRIBUTING.md).
 
 ## Creating a Custom Component Interface
 

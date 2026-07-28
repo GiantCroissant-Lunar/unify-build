@@ -1,8 +1,8 @@
 site_name: UnifyBuild
 site_description: .NET build orchestration system built on NUKE
-site_url: https://your-org.github.io/unify-build/
-repo_url: https://github.com/your-org/unify-build
-repo_name: your-org/unify-build
+site_url: https://giantcroissant-lunar.github.io/unify-build/
+repo_url: https://github.com/GiantCroissant-Lunar/unify-build
+repo_name: GiantCroissant-Lunar/unify-build
 
 docs_dir: docs
 
@@ -47,27 +47,27 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Guides:
-    - Getting Started: getting-started.md
-    - Migration Guide: migration-guide.md
-    - Releasing: releasing.md
-    - Contributing: contributing.md
-    - Troubleshooting: troubleshooting.md
+    - Getting Started: guides/getting-started.md
+    - Migration Guide: guides/migration-guide.md
+    - Releasing: guides/releasing.md
+    - Contributing: guides/contributing.md
+    - Troubleshooting: guides/troubleshooting.md
   - Reference:
-    - Configuration Reference: configuration-reference.md
-    - Caching: caching.md
-    - Telemetry: telemetry.md
+    - Configuration Reference: reference/configuration-reference.md
+    - Caching: reference/caching.md
+    - Telemetry: reference/telemetry.md
   - Examples:
       - .NET Library: examples/dotnet-library.md
       - .NET Application: examples/dotnet-application.md
       - Native Build (CMake): examples/native-build.md
       - Unity Build: examples/unity-build.md
   - Architecture:
-    - Overview: architecture.md
+    - Overview: architecture/index.md
     - ADRs:
-      - ADR 0001 Build Config Schema Versioning: adrs/adr-0001-build-config-schema-versioning.md
+      - ADR 0001 Build Config Schema Versioning: architecture/adrs/adr-0001-build-config-schema-versioning.md
     - RFCs:
-      - RFC 0001 Generic Build Schema: rfcs/rfc-0001-generic-build-schema.md
-      - RFC 0002 Dotnet Tool Distribution: rfcs/rfc-0002-dotnet-tool-distribution.md
+      - RFC 0001 Generic Build Schema: architecture/rfcs/rfc-0001-generic-build-schema.md
+      - RFC 0002 Dotnet Tool Distribution: architecture/rfcs/rfc-0002-dotnet-tool-distribution.md
   - Specifications:
     - Overview: specs/index.md
     - Automated JSON Schema Generation:

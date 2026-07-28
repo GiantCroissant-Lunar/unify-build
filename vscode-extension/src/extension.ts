@@ -239,7 +239,7 @@ class BuildConfigHoverProvider implements vscode.HoverProvider {
     const markdown = new vscode.MarkdownString();
     markdown.appendMarkdown(`**\`${word}\`** — ${doc}\n\n`);
     markdown.appendMarkdown(
-      `[Configuration Reference](https://unifybuild.github.io/docs/configuration-reference)`
+      `[Configuration Reference](https://giantcroissant-lunar.github.io/unify-build/reference/configuration-reference/)`
     );
     return new vscode.Hover(markdown, wordRange);
   }

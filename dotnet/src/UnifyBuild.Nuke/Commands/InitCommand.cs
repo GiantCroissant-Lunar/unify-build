@@ -352,7 +352,7 @@ public sealed class InitCommand
     {
         var sb = new StringBuilder();
         sb.AppendLine("// UnifyBuild configuration file");
-        sb.AppendLine("// See https://github.com/nicepkg/UnifyBuild/blob/main/docs/configuration-reference.md");
+        sb.AppendLine("// See https://github.com/GiantCroissant-Lunar/unify-build/blob/main/docs/reference/configuration-reference.md");
         sb.AppendLine(json);
         return sb.ToString();
     }
