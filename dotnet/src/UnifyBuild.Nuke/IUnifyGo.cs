@@ -57,8 +57,9 @@ public interface IUnifyGo : IUnifyBuildConfig
             Serilog.Log.Information("Detected go: {Output}", process.Output.FirstOrDefault().Text);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Debug(ex, "go probe failed — tool not found or launch error");
             return false;
         }
     }

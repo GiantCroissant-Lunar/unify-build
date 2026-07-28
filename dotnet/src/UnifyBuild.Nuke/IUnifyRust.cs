@@ -56,8 +56,9 @@ public interface IUnifyRust : IUnifyBuildConfig
             Serilog.Log.Information("Detected cargo: {Output}", process.Output.FirstOrDefault().Text);
             return true;
         }
-        catch
+        catch (Exception ex)
         {
+            Serilog.Log.Debug(ex, "cargo probe failed — tool not found or launch error");
             return false;
         }
     }

@@ -125,8 +125,9 @@ public interface IUnifyNative : IUnifyBuildConfig
     /// <summary>
     /// Attempts to detect the vcpkg toolchain file by checking multiple locations:
     /// 1. VCPKG_ROOT environment variable
-    /// 2. Repository-local vcpkg directory
-    /// 3. Common system install locations
+    /// 2. VCPKG_INSTALLATION_ROOT environment variable (CI-compatible, e.g. Azure Pipelines)
+    /// 3. Repository-local vcpkg directory
+    /// 4. Common system install locations
     /// </summary>
     internal static string? TryDetectVcpkgToolchain(AbsolutePath repoRoot)
     {
@@ -142,7 +143,19 @@ public interface IUnifyNative : IUnifyBuildConfig
             }
         }
 
-        // 2. Check repo-local vcpkg directory (existing behavior)
+        // 2. Check VCPKG_INSTALLATION_ROOT environment variable (CI-compatible)
+        var vcpkgInstallationRoot = Environment.GetEnvironmentVariable("VCPKG_INSTALLATION_ROOT");
+        if (!string.IsNullOrEmpty(vcpkgInstallationRoot))
+        {
+            var ciToolchain = Path.Combine(vcpkgInstallationRoot, "scripts", "buildsystems", "vcpkg.cmake");
+            if (File.Exists(ciToolchain))
+            {
+                Serilog.Log.Debug("Detected vcpkg toolchain via VCPKG_INSTALLATION_ROOT: {Path}", ciToolchain);
+                return ciToolchain;
+            }
+        }
+
+        // 3. Check repo-local vcpkg directory (existing behavior)
         var repoToolchain = repoRoot / "vcpkg" / "scripts" / "buildsystems" / "vcpkg.cmake";
         if (File.Exists(repoToolchain))
         {
@@ -150,7 +163,7 @@ public interface IUnifyNative : IUnifyBuildConfig
             return repoToolchain;
         }
 
-        // 3. Check common system install locations
+        // 4. Check common system install locations
         var commonPaths = GetCommonVcpkgPaths();
         foreach (var basePath in commonPaths)
         {
