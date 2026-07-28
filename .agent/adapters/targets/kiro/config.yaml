@@ -1,16 +1,15 @@
-# Cross-CLI deployment via the open Agent Skills spec.
+# Kiro IDE deployment target.
 #
-# Populates .agents/skills/ (read by Codex, Copilot, Kimi, OpenCode, Kilo
-# natively, plus Claude Code via the Agent Skills compat) and AGENTS.md
-# (read natively by Codex, Copilot, OpenCode, Kilo, plus Claude via the
-# CLAUDE.md import shim).
-# Pi is intentionally not an active adapter.
+# Populates .kiro/skills/ (symlinks per skill) and .kiro/steering/<rule>.md
+# (one file per rule -- Kiro's native steering format, NOT a single AGENTS.md).
+# Kiro does not natively read .agents/skills/ or AGENTS.md, so it needs its
+# own deployment.
 
-tool: agents
-display_name: Cross-CLI (.agents/ standard)
+tool: kiro
+display_name: Kiro IDE
 
 skills:
-  target: .agents/skills
+  target: .kiro/skills
   strategy: symlink
   local:
     - dotnet-build
@@ -34,8 +33,9 @@ skills:
     - 04-tooling/vendor-restore
 
 rules:
-  target: AGENTS.md
-  strategy: concatenate
+  target: .kiro/steering
+  strategy: per_file
+  extension: .md
   local: []
   workspace:
     - audit-existing-surfaces
