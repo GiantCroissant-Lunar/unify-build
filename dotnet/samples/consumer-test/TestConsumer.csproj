@@ -24,7 +24,7 @@
 
   <!-- Add local package source -->
   <PropertyGroup>
-    <RestoreAdditionalProjectSources>$(MSBuildThisFileDirectory)../../build/_artifacts/local/flat</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources>$(MSBuildThisFileDirectory)../../../build/_artifacts/local/flat</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
 </Project>

@@ -1,48 +1,47 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "./build.config.schema.json",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "./build.config.schema.json",
   "title": "UnifyBuild build.config",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "$schema": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "version": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "versionEnv": {
       "type": [
-        "string",
-        "null"
-      ],
-      "default": "Version"
+        "null",
+        "string"
+      ]
     },
     "artifactsVersion": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "solution": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "projectGroups": {
       "type": [
-        "object",
-        "null"
+        "null",
+        "object"
       ],
       "additionalProperties": {
-        "$ref": "#/$defs/projectGroup"
+        "$ref": "#/definitions/ProjectGroup"
       }
     },
     "compileProjects": {
@@ -74,163 +73,176 @@
     },
     "nuGetOutputDir": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "publishOutputDir": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "packProperties": {
       "type": [
-        "object",
-        "null"
+        "null",
+        "object"
       ],
       "additionalProperties": {
         "type": "string"
       }
     },
     "packIncludeSymbols": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "syncLocalNugetFeed": {
-      "type": "boolean",
-      "default": false
+      "type": "boolean"
     },
     "localNugetFeedRoot": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "localNugetFeedFlatSubdir": {
       "type": [
-        "string",
-        "null"
-      ],
-      "default": "flat"
+        "null",
+        "string"
+      ]
     },
     "localNugetFeedHierarchicalSubdir": {
       "type": [
-        "string",
-        "null"
-      ],
-      "default": "hierarchical"
+        "null",
+        "string"
+      ]
     },
     "localNugetFeedBaseUrl": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "nativeBuild": {
-      "$ref": "#/$defs/nativeBuild"
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/NativeBuildConfig"
+        }
+      ]
+    },
+    "rustBuild": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/RustBuildConfig"
+        }
+      ]
+    },
+    "goBuild": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/GoBuildConfig"
+        }
+      ]
     },
     "unityBuild": {
-      "$ref": "#/$defs/unityBuild"
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/UnityBuildJsonConfig"
+        }
+      ]
     },
     "godotBuild": {
-      "$ref": "#/$defs/godotBuild"
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/GodotBuildConfig"
+        }
+      ]
+    },
+    "mobileBuild": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/MobileBuildConfig"
+        }
+      ]
+    },
+    "unityExport": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/UnityExportConfig"
+        }
+      ]
+    },
+    "packageManagement": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/PackageManagementConfig"
+        }
+      ]
+    },
+    "performance": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/PerformanceConfig"
+        }
+      ]
+    },
+    "observability": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/ObservabilityConfig"
+        }
+      ]
+    },
+    "extensions": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/ExtensionsConfig"
+        }
+      ]
     }
   },
-  "$defs": {
-    "nativeBuild": {
-      "type": [
-        "object",
-        "null"
-      ],
-      "additionalProperties": false,
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "default": true
-        },
-        "cmakeSourceDir": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": "native"
-        },
-        "cmakeBuildDir": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": "native/build"
-        },
-        "cmakePreset": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "cmakeOptions": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          }
-        },
-        "buildConfig": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": "Release"
-        },
-        "autoDetectVcpkg": {
-          "type": "boolean",
-          "default": true
-        },
-        "outputDir": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "artifactPatterns": {
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "*.dll",
-            "*.so",
-            "*.dylib",
-            "*.lib",
-            "*.a"
-          ]
-        }
-      }
-    },
-    "projectGroup": {
+  "definitions": {
+    "ProjectGroup": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "sourceDir"
-      ],
       "properties": {
         "sourceDir": {
           "type": "string"
         },
         "action": {
-          "type": "string",
-          "default": "compile",
-          "enum": [
-            "publish",
-            "pack",
-            "compile"
-          ]
+          "type": "string"
         },
         "include": {
           "type": [
@@ -252,14 +264,14 @@
         },
         "outputDir": {
           "type": [
-            "string",
-            "null"
+            "null",
+            "string"
           ]
         },
         "properties": {
           "type": [
-            "object",
-            "null"
+            "null",
+            "object"
           ],
           "additionalProperties": {
             "type": "string"
@@ -267,23 +279,186 @@
         }
       }
     },
-    "unityBuild": {
-      "type": [
-        "object",
-        "null"
-      ],
+    "NativeBuildConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cMakeSourceDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "cMakeBuildDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "cMakePreset": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "cMakeOptions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "buildConfig": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "autoDetectVcpkg": {
+          "type": "boolean"
+        },
+        "outputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "artifactPatterns": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "customCommands": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "platform": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "RustBuildConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "cargoManifestDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "profile": {
+          "type": "string"
+        },
+        "features": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "targetTriple": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "outputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "artifactPatterns": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "GoBuildConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "goModuleDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "buildFlags": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "outputBinary": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "outputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "envVars": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "UnityBuildJsonConfig": {
+      "type": "object",
       "additionalProperties": false,
       "properties": {
         "targetFramework": {
           "type": [
-            "string",
-            "null"
-          ],
-          "default": "netstandard2.1"
+            "null",
+            "string"
+          ]
         },
         "unityProjectRoot": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "packages": {
           "type": [
@@ -291,22 +466,20 @@
             "null"
           ],
           "items": {
-            "$ref": "#/$defs/unityPackageMapping"
+            "$ref": "#/definitions/UnityPackageMappingConfig"
           }
         }
       }
     },
-    "unityPackageMapping": {
+    "UnityPackageMappingConfig": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "packageName": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "scopedIndex": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "sourceProjects": {
           "type": [
@@ -337,34 +510,29 @@
         }
       }
     },
-    "godotBuild": {
-      "type": [
-        "object",
-        "null"
-      ],
+    "GodotBuildConfig": {
+      "type": "object",
       "additionalProperties": false,
       "properties": {
         "projectRoot": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "executablePathEnv": {
           "type": [
-            "string",
-            "null"
-          ],
-          "default": "GODOT"
+            "null",
+            "string"
+          ]
         },
         "executablePath": {
           "type": [
-            "string",
-            "null"
+            "null",
+            "string"
           ]
         },
         "assemblyName": {
           "type": [
-            "string",
-            "null"
+            "null",
+            "string"
           ]
         },
         "platforms": {
@@ -373,26 +541,376 @@
             "null"
           ],
           "items": {
-            "$ref": "#/$defs/godotPlatform"
+            "$ref": "#/definitions/GodotExportPlatformConfig"
           }
+        },
+        "androidKeystorePath": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "useFastlaneForMobile": {
+          "type": "boolean"
         }
       }
     },
-    "godotPlatform": {
+    "GodotExportPlatformConfig": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "rid": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "presetName": {
-          "type": "string",
-          "default": ""
+          "type": "string"
         },
         "binaryName": {
-          "type": "string",
-          "default": ""
+          "type": "string"
+        }
+      }
+    },
+    "MobileBuildConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "mobileRoot": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "ios": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/MobilePlatformConfig"
+            }
+          ]
+        },
+        "android": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/MobilePlatformConfig"
+            }
+          ]
+        },
+        "outputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "MobilePlatformConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "envVars": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "buildLane": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "betaLane": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "releaseLane": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "UnityExportConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectRoot": {
+          "type": "string"
+        },
+        "editorPath": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "editorPathEnv": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "executeMethod": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "platforms": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/UnityExportPlatformConfig"
+          }
+        },
+        "useFastlaneForMobile": {
+          "type": "boolean"
+        },
+        "outputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "UnityExportPlatformConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "buildTarget": {
+          "type": "string"
+        },
+        "outputName": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "buildArgs": {
+          "type": [
+            "null",
+            "object"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "PackageManagementConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "registries": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/definitions/NuGetRegistryConfig"
+          }
+        },
+        "signing": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/PackageSigningConfig"
+            }
+          ]
+        },
+        "sbom": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/SbomConfig"
+            }
+          ]
+        },
+        "retention": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/definitions/RetentionPolicyConfig"
+            }
+          ]
+        }
+      }
+    },
+    "NuGetRegistryConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "apiKeyEnvVar": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "PackageSigningConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "certificatePath": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "certificatePasswordEnvVar": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "timestampUrl": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "SbomConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "format": {
+          "type": "string"
+        },
+        "outputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "RetentionPolicyConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxVersions": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32"
+        },
+        "maxAgeDays": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32"
+        },
+        "localFeedPath": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "PerformanceConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enableCache": {
+          "type": "boolean"
+        },
+        "cacheDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "enableChangeDetection": {
+          "type": "boolean"
+        },
+        "distributedCacheUrl": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "maxParallelism": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32"
+        }
+      }
+    },
+    "ObservabilityConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enableMetrics": {
+          "type": "boolean"
+        },
+        "metricsFormat": {
+          "type": "string"
+        },
+        "metricsOutputDir": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "enableTelemetry": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ExtensionsConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "pluginPaths": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "autoLoadPlugins": {
+          "type": "boolean"
         }
       }
     }

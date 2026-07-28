@@ -17,6 +17,11 @@
     <PackageTags>build;nuke;dotnet;native;unity;ci;cd</PackageTags>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <BuildConfigSchemaPath Condition="Exists('..\..\..\build\_artifacts\build.config.schema.json')">..\..\..\build\_artifacts\build.config.schema.json</BuildConfigSchemaPath>
+    <BuildConfigSchemaPath Condition="'$(BuildConfigSchemaPath)' == ''">..\..\..\build\build.config.schema.json</BuildConfigSchemaPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="UnifyBuild.Nuke.Tests" />
   </ItemGroup>
@@ -29,7 +34,7 @@
 
   <!-- Include generated schema file in NuGet package -->
   <ItemGroup>
-    <None Include="..\..\..\build\_artifacts\build.config.schema.json"
+    <None Include="$(BuildConfigSchemaPath)"
           Pack="true"
           PackagePath="contentFiles\any\any"
           Visible="false" />

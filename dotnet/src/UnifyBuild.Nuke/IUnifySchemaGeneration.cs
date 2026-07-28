@@ -1,7 +1,4 @@
 using System.IO;
-using System.Text.Json;
-using NJsonSchema;
-using NJsonSchema.Generation;
 using Nuke.Common;
 using Nuke.Common.IO;
 
@@ -30,21 +27,7 @@ public interface IUnifySchemaGeneration : IUnifyBuildConfig
 
             Serilog.Log.Information("Generating JSON schema from BuildJsonConfig via NJsonSchema...");
 
-            var settings = new SystemTextJsonSchemaGeneratorSettings
-            {
-                SerializerOptions = new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                },
-                SchemaType = SchemaType.JsonSchema,
-                FlattenInheritanceHierarchy = true,
-            };
-
-            var schema = JsonSchema.FromType<BuildJsonConfig>(settings);
-            schema.Title = "UnifyBuild build.config";
-            schema.Id = "./build.config.schema.json";
-
-            File.WriteAllText(outputFile, schema.ToJson());
+            File.WriteAllText(outputFile, BuildConfigSchemaGenerator.Generate());
             Serilog.Log.Information("Schema written: {OutputFile}", outputFile);
         });
 }

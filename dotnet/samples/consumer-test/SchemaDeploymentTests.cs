@@ -144,11 +144,13 @@ public class SchemaDeploymentTests
         using var doc = JsonDocument.Parse(schemaContent);
         var root = doc.RootElement;
 
-        // Assert - Check for $defs with nested types
-        Assert.True(root.TryGetProperty("$defs", out var defs),
-            "Schema should have $defs for nested types");
+        // Assert - Draft 4 uses "definitions"; newer drafts use "$defs".
+        var hasDefinitions = root.TryGetProperty("definitions", out var defs)
+                             || root.TryGetProperty("$defs", out defs);
+        Assert.True(hasDefinitions,
+            "Schema should have nested type definitions");
 
-        var expectedDefs = new[] { "projectGroup", "nativeBuild", "unityBuild" };
+        var expectedDefs = new[] { "ProjectGroup", "NativeBuildConfig", "UnityBuildJsonConfig" };
         foreach (var expectedDef in expectedDefs)
         {
             Assert.True(defs.TryGetProperty(expectedDef, out _),

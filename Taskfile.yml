@@ -43,7 +43,7 @@ tasks:
       CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
     cmds:
       - cmd: |
-          echo "Seeding build/_artifacts/build.config.schema.json (required by UnifyBuild.Nuke.csproj at pack time)..."
+          echo "Seeding build/_artifacts/build.config.schema.json for local bootstrap packaging..."
           mkdir -p build/_artifacts
           cp build/build.config.schema.json build/_artifacts/build.config.schema.json
       - cmd: |

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace UnifyBuild.Nuke;
 
 /// <summary>
@@ -7,6 +9,12 @@ namespace UnifyBuild.Nuke;
 /// </summary>
 public sealed class BuildJsonConfig
 {
+    /// <summary>
+    /// Optional JSON Schema reference used by editors and validators.
+    /// </summary>
+    [JsonPropertyName("$schema")]
+    public string? Schema { get; set; }
+
     /// <summary>
     /// Explicit version to use. If null, VersionEnv and common GitVersion env vars are consulted.
     /// </summary>
