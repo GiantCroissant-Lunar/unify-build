@@ -7,10 +7,23 @@ loading utilities under `UnifyBuild.Nuke`.
 
 ## Project layout
 
-- `src/UnifyBuild.Nuke/` – NUKE helper library + build config schema loader
+- `dotnet/src/UnifyBuild.Nuke/` – NUKE helper library + build config schema loader
+- `dotnet/src/UnifyBuild.Tool/` – the `dotnet unify-build` CLI
+- `dotnet/tests/` – unit, integration, and packaging tests
 - `build/nuke/` – NUKE build entrypoint for this repo
 - `build/build.config.json` – build config used for dogfooding
 - `docs/architecture/rfcs/` – design notes / RFCs
+
+## Documentation
+
+- [Architecture](docs/architecture/index.md) – component interfaces, config resolution, project structure
+- [Extending UnifyBuild](docs/guides/extending.md) – step-by-step walkthrough for adding a component interface
+- [Configuration Reference](docs/reference/configuration-reference.md) – every `build.config.json` property
+- [Targets](docs/reference/targets.md) – every build target and its dependencies
+- [Agent Rules and Skills](docs/guides/agent-rules.md) – why `CLAUDE.md` is generated and what to edit instead
+
+If you change build schema or build behavior, update the relevant pages under `docs/`. The
+configuration reference and the target catalog are the two that go stale fastest.
 
 ## Development workflow
 

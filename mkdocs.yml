@@ -6,11 +6,15 @@ repo_name: GiantCroissant-Lunar/unify-build
 
 docs_dir: docs
 
+# Archive pages are still built and linkable, but are intentionally kept out of
+# the sidebar. Without this, MkDocs warns that they are absent from the nav.
+not_in_nav: |
+  archive/**
+
 theme:
   name: material
   features:
     - navigation.sections
-    - navigation.expand
     - navigation.top
     - search.suggest
     - search.highlight
@@ -44,49 +48,46 @@ markdown_extensions:
   - toc:
       permalink: true
 
+# Nav is split by audience: "Using" is for consumers of the tool, "Developing" is
+# for people changing UnifyBuild itself. docs/archive/ is deliberately excluded --
+# it is superseded material kept for maintainers, not published documentation.
 nav:
   - Home: index.md
-  - Guides:
+  - Using UnifyBuild:
     - Getting Started: guides/getting-started.md
     - Migration Guide: guides/migration-guide.md
-    - Releasing: guides/releasing.md
-    - Contributing: guides/contributing.md
     - Troubleshooting: guides/troubleshooting.md
-  - Reference:
-    - Configuration Reference: reference/configuration-reference.md
-    - Targets: reference/targets.md
-    - CLI: reference/cli.md
-    - Caching: reference/caching.md
-    - Telemetry: reference/telemetry.md
-  - Examples:
+    - Reference:
+      - Configuration: reference/configuration-reference.md
+      - Targets: reference/targets.md
+      - CLI: reference/cli.md
+      - Caching: reference/caching.md
+      - Telemetry: reference/telemetry.md
+      - Tooling: reference/tooling.md
+    - Examples:
       - .NET Library: examples/dotnet-library.md
       - .NET Application: examples/dotnet-application.md
+      - Multi-Target Library: examples/multi-target.md
+      - Monorepo: examples/monorepo.md
       - Native Build (CMake): examples/native-build.md
       - Unity Build: examples/unity-build.md
-  - Architecture:
-    - Overview: architecture/index.md
-    - ADRs:
+  - Developing UnifyBuild:
+    - Architecture: architecture/index.md
+    - Extending UnifyBuild: guides/extending.md
+    - Releasing: guides/releasing.md
+    - Agent Rules and Skills: guides/agent-rules.md
+    - Contributing: https://github.com/GiantCroissant-Lunar/unify-build/blob/main/CONTRIBUTING.md
+    - Decisions:
       - ADR 0001 Build Config Schema Versioning: architecture/adrs/adr-0001-build-config-schema-versioning.md
-    - RFCs:
       - RFC 0001 Generic Build Schema: architecture/rfcs/rfc-0001-generic-build-schema.md
       - RFC 0002 Dotnet Tool Distribution: architecture/rfcs/rfc-0002-dotnet-tool-distribution.md
-  - Specifications:
-    - Overview: specs/index.md
-    - Automated JSON Schema Generation:
-      - Requirements: specs/automated-json-schema-generation/requirements.md
-      - Design: specs/automated-json-schema-generation/design.md
-      - Tasks: specs/automated-json-schema-generation/tasks.md
-    - Project Enhancements 2026:
-      - Requirements: specs/project-enhancements-2026/requirements.md
-      - Design: specs/project-enhancements-2026/design.md
-      - Tasks: specs/project-enhancements-2026/tasks.md
-  - Archive:
-    - Overview: archive/index.md
-    - Removed:
-      - BuildConfigJson V1 Removed: archive/removed/BuildConfigJsonV1_REMOVED.md
-    - Reviews:
-      - Code Review V2 Schema: archive/reviews/CODE_REVIEW_V2_SCHEMA.md
-      - Code Review V2 Schema Updated: archive/reviews/CODE_REVIEW_V2_SCHEMA_UPDATED.md
-      - Simplified V2 Only: archive/reviews/SIMPLIFIED_V2_ONLY.md
-    - Progress:
-      - Dotnet Tool Migration: archive/progress/PROGRESS-dotnet-tool-migration.md
+    - Specifications:
+      - Overview: specs/index.md
+      - Automated JSON Schema Generation:
+        - Requirements: specs/automated-json-schema-generation/requirements.md
+        - Design: specs/automated-json-schema-generation/design.md
+        - Tasks: specs/automated-json-schema-generation/tasks.md
+      - Project Enhancements 2026:
+        - Requirements: specs/project-enhancements-2026/requirements.md
+        - Design: specs/project-enhancements-2026/design.md
+        - Tasks: specs/project-enhancements-2026/tasks.md

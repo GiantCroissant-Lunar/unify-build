@@ -2,7 +2,7 @@
 
 Reusable build tooling (NUKE) used across GiantCroissant-Lunar repos.
 
-UnifyBuild is a .NET build orchestration system built on [NUKE](https://nuke.build/) that provides composable component interfaces for building, packing, and publishing .NET, native (CMake), and Unity projects — all driven by a single `build.config.json` configuration file.
+UnifyBuild is a .NET build orchestration system built on [NUKE](https://nuke.build/) that provides composable component interfaces for building, packing, and publishing .NET, native (CMake), Rust, Go, Unity, Godot, and mobile projects — all driven by a single `build.config.json` configuration file.
 
 ## Distribution Channels
 
@@ -90,6 +90,8 @@ dotnet unify-build PublishHosts --configuration Release
 | `dotnet unify-build validate` | Validate config against JSON Schema |
 | `dotnet unify-build doctor` | Diagnose configuration and environment issues |
 
+This is the common subset. See the [CLI Reference](docs/reference/cli.md) for every command and parameter, and the [Targets Reference](docs/reference/targets.md) for the full target catalog including Unity, Godot, and mobile.
+
 ## UnifyBuild.Nuke
 
 `UnifyBuild.Nuke` is the core library consumed by NUKE build scripts to:
@@ -134,6 +136,10 @@ For a comprehensive example, see [`build/build.config.example.json`](build/build
 
 - [Getting Started](docs/guides/getting-started.md) — installation, first config, and common commands
 - [Configuration Reference](docs/reference/configuration-reference.md) — all `build.config.json` properties
+- [Targets](docs/reference/targets.md) — every build target, its dependencies, and where it's available
+- [CLI Reference](docs/reference/cli.md) — `init`, `validate`, `doctor`, `migrate`, and global parameters
+- [Tooling](docs/reference/tooling.md) — Unity package, VS Code extension, and metrics dashboard
+- [Architecture](docs/architecture/index.md) — component design and extension points
 - [Releasing](docs/guides/releasing.md) — bump versions, tag releases, and OpenUPM onboarding
 - [Troubleshooting](docs/guides/troubleshooting.md) — common errors and fixes
 - [Examples](docs/examples/) — end-to-end project examples
