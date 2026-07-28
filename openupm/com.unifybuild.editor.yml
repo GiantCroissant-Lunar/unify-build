@@ -4,7 +4,7 @@
 name: com.unifybuild.editor
 displayName: UnifyBuild Editor
 description: Unity editor entry points for UnifyBuild-driven batch mode builds and exports across desktop and mobile targets.
-repoUrl: https://github.com/unifybuild/unifybuild
+repoUrl: https://github.com/GiantCroissant-Lunar/unify-build
 parentRepoUrl: null
 licenseSpdxId: MIT
 licenseName: MIT License
