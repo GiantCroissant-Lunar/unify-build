@@ -32,6 +32,11 @@ Enable local caching in `build.config.json`:
 | `enableCache` | boolean | `false` | Enable local build caching |
 | `cacheDir` | string | `build/_cache` | Directory for cached outputs |
 | `enableChangeDetection` | boolean | `true` | Skip builds when no source files changed |
+| `maxParallelism` | integer | processor count | Max independent project groups built concurrently |
+
+`maxParallelism` falls back to `Environment.ProcessorCount` when it is `null` or `<= 0`. See the
+[Configuration Reference](configuration-reference.md#performance-configuration) for the full
+`performance` section.
 
 ## Distributed Caching
 
@@ -79,8 +84,16 @@ If your cache server requires authentication, configure it via environment varia
 ### Cache Invalidation
 
 - Cache keys are content-based (SHA256 hash), so any source change automatically invalidates the cache
-- To force a full rebuild, delete the `build/_cache` directory or pass `--no-cache`
 - Changing the build version or configuration properties also changes the cache key
+
+To force a full rebuild, delete the cache directory:
+
+```bash
+rm -rf build/_cache
+```
+
+Or disable caching for a run by setting `performance.enableCache` to `false`. There is no
+command-line flag to bypass the cache — caching is configuration-driven only.
 
 ### Storage Management
 

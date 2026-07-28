@@ -54,4 +54,11 @@ Telemetry is disabled by default — no action is needed if you never enabled it
 
 Telemetry records are saved as JSON files in the `build/_telemetry/` directory within your repository. Data is **never sent to any remote server**. You can inspect, delete, or `.gitignore` these files at any time.
 
-Each build produces one file named `telemetry-{date}-{id}.json`.
+Each build produces one file named `telemetry-{yyyyMMdd-HHmmss}-{sessionIdPrefix}.json`, where the
+suffix is the first 8 characters of that build's `sessionId` — for example
+`telemetry-20260115-103000-a3f9c1d2.json`.
+
+Telemetry is separate from build metrics. Metrics are on by default, are written to
+`build/_metrics`, and feed the [dashboard](tooling.md#metrics-dashboard); telemetry is opt-in and
+written to `build/_telemetry`. See [`observability`](configuration-reference.md#observability-configuration)
+for both settings.
