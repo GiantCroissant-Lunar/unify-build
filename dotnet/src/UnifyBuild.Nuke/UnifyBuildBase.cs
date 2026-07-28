@@ -6,7 +6,6 @@ using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
 
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 namespace UnifyBuild.Nuke;
@@ -111,8 +110,8 @@ public abstract class UnifyBuildBase : NukeBuild
             if (!Directory.Exists(source))
                 throw new InvalidOperationException($"Artifacts source '{source}' does not exist. Run publish targets first.");
 
-            EnsureCleanDirectory(latest);
-            CopyDirectoryRecursively(source, latest, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
+            latest.CreateOrCleanDirectory();
+            source.Copy(latest, ExistsPolicy.MergeAndOverwrite);
         });
 
     /// <summary>
@@ -135,7 +134,7 @@ public abstract class UnifyBuildBase : NukeBuild
                 return;
             }
 
-            EnsureExistingDirectory(Context.NuGetOutputDir);
+            Context.NuGetOutputDir.CreateDirectory();
 
             var projects = GetProjectsToPack(Context.ContractsDir, Context.IncludeContracts, Context.ExcludeContracts);
             foreach (var project in projects)
@@ -158,7 +157,7 @@ public abstract class UnifyBuildBase : NukeBuild
                 return;
             }
 
-            EnsureExistingDirectory(Context.NuGetOutputDir);
+            Context.NuGetOutputDir.CreateDirectory();
 
             var projectsToPack = Context.PackProjects.Length > 0
                 ? Context.PackProjects

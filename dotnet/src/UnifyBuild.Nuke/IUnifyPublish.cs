@@ -5,7 +5,6 @@ using System.Linq;
 using Nuke.Common;
 using Nuke.Common.IO;
 using Nuke.Common.Tools.DotNet;
-using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
 namespace UnifyBuild.Nuke;
@@ -77,7 +76,7 @@ public interface IUnifyPublish : IUnifyCompile
                 throw new InvalidOperationException($"Artifacts source '{source}' does not exist. Run publish targets first.");
 
             latest.CreateOrCleanDirectory();
-            CopyDirectoryRecursively(source, latest, DirectoryExistsPolicy.Merge, FileExistsPolicy.Overwrite);
+            source.Copy(latest, ExistsPolicy.MergeAndOverwrite);
         });
 
     /// <summary>
