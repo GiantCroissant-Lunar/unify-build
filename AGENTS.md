@@ -1,0 +1,597 @@
+# Agent Instructions
+
+This tracked file is the canonical agent-guidance source for this repository.
+Tool-specific pointer files, including `CLAUDE.md`, are generated from adapter
+configuration and must not replace this file.
+
+<!-- agents-digest:start -->
+## Audit existing surfaces before building new ones
+Before specifying or building a NEW debug, automation, runtime, or agent surface — HTTP/WebSocket server, command channel, logging pipeline, asset/catalog service, DI pattern, any "X server/bridge/service" — **you MUST audit for an existing one that does, or could do, the job. If it exists, fix or extend it — never build a parallel surface.**
+- Before writing the spec, check three things and read any hit first: package names (`ls`/grep), a functional grep for the API/pattern, and `git log` history for recent work on it.
+- The spec MUST contain either an "Existing surfaces audited: …" note or a "Why this is not a duplicate of `<X>`" note.
+- **Not when:** a genuinely new feature with no equivalent, project bootstrap with no surfaces yet, or a one-file hotfix.
+- Full: `.agent/rules/audit-existing-surfaces.md`
+<!-- agents-digest:end -->
+
+# Audit Existing Surfaces Before Specifying New Ones
+
+## Rule
+
+Before specifying, recommending, or implementing a NEW debug / automation / runtime / agent surface, **you MUST audit the project for existing surfaces that already do, or could be extended to do, the same job.** If one exists, fix or extend it. Do not build a parallel surface.
+
+This applies to:
+- Debug HTTP / WebSocket servers
+- Agent / automation command channels
+- Logging / telemetry pipelines
+- Asset loading / catalog / resource services
+- DI registration patterns
+- Any "X server" or "X bridge" or "X service" you're about to introduce
+
+## Why
+
+Duplicate surfaces compound costs invisibly:
+- Every commit on top of the duplicate has to be undone when the project converges back on the canonical one
+- Two surfaces means two sets of bugs, two sets of build settings, two failure modes the team has to keep in their head
+- The user has to fight to get architectural convergence back, and trust erodes fast
+
+This rule exists because of a real incident on 2026-05-04 in muni-dungeon: an L1 `DebugHttpServer` (System.Net.HttpListener) was specified and committed to `game.app/Runtime/DebugHttp/` even though `game.assist` had already had a working `AgentBridge` WebSocket server with its own command registry for **5+ days** (first commit 2026-04-29 `124a4aa2`, with continuous development through 2026-04-30). A "Resource service review" commit on 2026-05-04 11:12 explicitly noted AgentBridge existed (`90676a14: ... + AgentBridge finding`), and L1 was committed THREE MINUTES LATER (`d22bfe5e` at 11:15). Hours of follow-on work then accumulated on the duplicate before the user caught it. None of that work would have been needed if anyone had run `git log --oneline -- project/packages/*/AgentBridge` first.
+
+## How to Apply
+
+Before writing the spec for a new surface, run all three of these:
+
+```bash
+# 1. Surface existence check — is there a package whose name suggests this already?
+ls project/packages/ | grep -iE '<keyword-of-the-surface-you-want>'
+# (e.g. for a "debug HTTP" surface: grep -iE 'debug|assist|agent|bridge|automation')
+
+# 2. Functional grep — is there code doing the kind of thing you want to add?
+grep -rn '<key API or pattern>' project/packages/ --include="*.cs" | head -20
+# (e.g. for HTTP servers: grep -rn 'HttpListener\|Best.HTTP\|app.use\|app.listen')
+
+# 3. History grep — has someone built and committed this kind of work recently?
+git log --oneline --all -- project/packages/<candidate-package> 2>&1 | head -10
+git log --oneline --since='2 months ago' | grep -iE '<keyword>' | head -10
+```
+
+If ANY of those return a hit, **read the hit before writing the spec.** Decide whether the existing surface is broken, incomplete, or wrong-scoped — and if so, file the FIX as your task instead of writing a parallel one.
+
+## Verification Checklist Before Submitting a Spec
+
+When writing or reviewing a task spec for a new surface, the spec MUST include one of:
+
+- [ ] An "Existing surfaces audited" section listing what was checked + the conclusion (e.g. "No existing HTTP / WebSocket / command-channel surface found in `project/packages/*` or `project/tools/*`")
+- [ ] A "Why this is not a duplicate of [existing surface]" section if a candidate was found and rejected (e.g. "AgentBridge exists at `game.assist/Runtime/AgentBridge/` but is currently broken on Windows; this task fixes it rather than building a parallel one")
+
+If the spec lacks either section, reject it before implementation begins.
+
+## When This Rule Does NOT Apply
+
+- Pure new-feature work where there's no obvious existing equivalent (e.g. adding a new content type, a new gameplay system)
+- Project bootstrap when the project genuinely has no surfaces yet
+- Hot-fix work explicitly scoped to one bug in one file
+
+For everything else, audit first.
+
+<!-- agents-digest:start -->
+## Build conventions (unify-build + GitVersion)
+**Use `unify-build` (`dotnet tool run unify-build -- <Target>`) for all .NET build/pack, and GitVersion (`bash tools/gitversion.sh`) for versions.** Never run raw `dotnet build`/`dotnet pack` when a `build/build.config.json` exists; never hardcode versions.
+- Targets: `Compile` (restore+build), `PackProjects`, `PackAll`. Run `dotnet tool restore` first in a fresh repo.
+- After pack, sync `.nupkg` → `C:\lunar-horse\packages\nuget\` (the canonical flat feed). Most repos wrap the flow as `task build` / `task test` / `task pack`.
+- Full (per-project task tables): `.agent/rules/build-conventions.md`
+<!-- agents-digest:end -->
+
+# Build Conventions
+
+## Rule
+
+Agents MUST use **unify-build** (Nuke-based, `dotnet tool run unify-build -- <Target>`) for all .NET build and pack operations, and **GitVersion** (via `tools/gitversion.sh` wrapper) for versioning. Never hardcode versions or use raw `dotnet build`/`dotnet pack` when unify-build is available.
+
+### unify-build
+
+All plate-projects have `unifybuild.tool` 3.0.0 as a dotnet local tool. Key targets:
+
+| Target | Description |
+|--------|-------------|
+| `Compile` | Restore + build |
+| `PackProjects` | Build + pack NuGet packages |
+| `PackAll` | Pack contracts + projects |
+
+Invoke: `dotnet tool run unify-build -- <Target>`
+
+Configuration is in `build/build.config.json` — defines solution path, project groups, version env, and feed sync.
+
+### GitVersion
+
+All repos include `gitversion.tool` 6.5.1. On Windows/Git Bash, always use the wrapper:
+
+```bash
+bash tools/gitversion.sh
+```
+
+Extract version for builds:
+```bash
+export GITVERSION_MAJORMINORPATCH=$(bash tools/gitversion.sh | python -c "import sys,json;print(json.load(sys.stdin)['MajorMinorPatch'])")
+```
+
+GitVersion.yml uses v6 format: `is-main-branch` (not `is-mainline`), `label` (not `tag`).
+
+### Project Commands
+
+#### Plate Libraries (service-archi, plugin-archi, crosscut-foundation)
+
+```bash
+dotnet tool restore
+dotnet tool run unify-build -- Compile
+# Set GITVERSION_MAJORMINORPATCH from tools/gitversion.sh
+dotnet tool run unify-build -- PackProjects
+cp build/_artifacts/*/nuget/*.nupkg C:\lunar-horse\packages\nuget/
+```
+
+Or via Taskfile: `task pack` (wraps the above).
+
+#### fantasim-world
+
+| Task | Command |
+|------|---------|
+| `task build` | Restore + build the solution |
+| `task test` | Run all tests |
+| `task pack VERSION=x.y.z` | Pack NuGet packages |
+| `task sync-feed VERSION=x.y.z` | Copy `.nupkg` to local feed |
+
+#### fantasim-app-godot
+
+| Task | Command |
+|------|---------|
+| `task build:app` | Export complete-app EXE |
+| `task build:bundles --force` | Export ALL bundle PCKs |
+| `task run:complete-app` | Run exported EXE |
+| `task run:complete-app:editor` | Open in Godot editor |
+
+### Local NuGet Feed
+
+- Canonical flat feed at: `C:\lunar-horse\packages\nuget\` (top-level). Legacy `flat/` subdir was removed 2026-05-19.
+- Configured in: `C:\lunar-horse\nuget.config` (and per-repo `nuget.config` via relative path `..\..\packages\nuget`).
+- All projects resolve packages from this feed first.
+
+### Anti-Patterns
+
+- Running raw `dotnet build`/`dotnet pack` instead of `unify-build` when a build.config.json exists.
+- Hardcoding version numbers instead of using GitVersion.
+- Forgetting to sync packed NuGet packages to the local feed.
+- Skipping `dotnet tool restore` before first build in a repo.
+
+<!-- agents-digest:start -->
+## Commit often (Conventional Commits)
+**Commit early and often using Conventional Commits — `<type>(<scope>): <description>` — and respect pre-commit hooks.**
+- Types: `feat fix refactor docs test build chore ci perf style`. Breaking change: trailing `!` or a `BREAKING CHANGE:` footer.
+- **NEVER** skip hooks with `--no-verify` unless the user asks. If a hook fails: fix it, re-stage, make a NEW commit — **never `--amend`** (the previous commit didn't happen).
+- Commit at each meaningful step; don't accumulate dozens of files or mix unrelated changes in one commit.
+- Full: `.agent/rules/commit-often.md`
+<!-- agents-digest:end -->
+
+# Commit Often (Conventional Commits)
+
+## Rule
+
+Agents MUST commit early and often using **Conventional Commits** format, and MUST respect **pre-commit hooks**.
+
+### Conventional Commits Format
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `build`, `chore`, `ci`, `perf`, `style`
+
+Scope: module or area affected (e.g., `velocity`, `topology`, `nuget`, `bootstrap`).
+
+Breaking changes: append `!` after type/scope or use `BREAKING CHANGE:` footer.
+
+### Pre-commit Hooks
+
+- NEVER skip hooks with `--no-verify` unless the user explicitly asks.
+- If a hook fails: fix the issue, re-stage, create a NEW commit (do NOT `--amend` -- the previous commit did not happen).
+- If the hook is genuinely blocking and cannot be fixed, ask the user.
+
+### When to Commit
+
+| Situation | Action |
+|-----------|--------|
+| Added a new file or module | Commit |
+| Fixed a bug | Commit |
+| Updated configuration | Commit |
+| Completed a refactor step | Commit |
+| Added or updated tests | Commit |
+| Before starting unrelated work | Commit current changes first |
+| After resolving merge conflicts | Commit immediately |
+
+### Anti-Patterns
+
+- Accumulating dozens of changed files before committing.
+- Committing only at the end of a session.
+- Mixing unrelated changes in one commit.
+- Using non-conventional commit messages (e.g., "update stuff").
+- Skipping pre-commit hooks with `--no-verify`.
+
+<!-- agents-digest:start -->
+## Consult skills before claiming runtime state
+Before asserting any runtime/build/live-system fact ("X works", "Y is initialized", "Z returns 500"), **check the skills index (`.agent/skills/INDEX.md`) for a verifying skill and use it. Do NOT paraphrase a handover, RFC, or doc as if it were a current observation.**
+- If a fitting skill exists but you can't run it now, say so explicitly ("the handover claims X — I haven't verified it this session because …").
+- No skill fits? Fall back to `@check-before-claim` (grep, file read, `git log -S`) before stating it as current fact.
+- **Not when:** restating what the user just told you, quoting a file you read this turn, static structural facts, or clearly-framed hypotheticals.
+- Full: `.agent/rules/consult-skills-before-claiming.md`
+<!-- agents-digest:end -->
+
+# Consult Agent Skills Before Claiming Runtime State
+
+## Rule
+
+Before stating a runtime, build, or live-system fact about a project — "X works", "Y is initialized", "Z returns 500", "the loop is 90% green" — **you MUST first check the agent skills index for a skill that verifies it, and use that skill.** Do NOT paraphrase a handover, RFC, walkthrough doc, or task spec as if it were a current observation.
+
+The available skills are listed in:
+- `<lunar-horse>/.agent/skills/INDEX.md` (workspace-level)
+- `<active-project>/.agent/skills/INDEX.md` (project-level, if present)
+
+Read the indices when uncertain which skill applies.
+
+## Why
+
+Handover docs and walkthrough notes record the state of a project **at the moment they were written**. Between then and now:
+- Code may have shipped that fixes or breaks the thing being described
+- The build artifact the doc was tested against may have been deleted or replaced
+- A different agent may have changed the surrounding system in ways that invalidate the claim
+- The "verified" line in the doc may itself have been wrong, and just nobody has re-checked
+
+When you paraphrase a doc as if it's a fresh observation, you launder its uncertainty into a confident-sounding claim. The user then has to push back to discover the source was a doc, not a check. This costs trust and wastes their time.
+
+## How to Apply
+
+Before writing a status sentence, ask: **is there a skill that turns this claim into an observable?**
+
+| Claim shape | Skill to invoke |
+|---|---|
+| "Live agent bridge / debug HTTP works in the player" | `@agent-bridge`, `@unity-window-capture` |
+| "Scene X loads cleanly" | `@scene-load-verifier`, `@play-mode-debugger` |
+| "Endpoint Y returns Z" | run `curl` against the live process — do NOT cite a doc |
+| "Build target produces output" | `@build` / `@unify-build`; check `build/_artifacts/` directly |
+| "Addressables hot-reload works" | `@addressables-hot-reload`, `@agent-playtest-loop` |
+| "Unity test asmdef X is wired in" | `@unity-mcp` test runner; check `Packages/manifest.json` testables array |
+| "Plugin DLL is in the build" | `@unitypackage-plugin-linking` audit; inspect `build/_artifacts/.../Managed/` |
+| "Visual / UI looks right" | `@unity-window-capture`, project-specific screenshot skill |
+
+If a skill exists and fits, **use it.** If a skill exists but you cannot use it right now (Unity not open, build not running, etc.), say that explicitly: "the handover claims X — I haven't verified it this session because Unity isn't open."
+
+If you cannot find a skill that verifies the claim, fall back to the `@check-before-claim` skill's general procedure (grep, file read, `git log -S`, etc.) before stating it as a current fact.
+
+## Anti-pattern
+
+Bad:
+> The inner content loop already works today. The 90% GREEN status on the handover is this loop.
+
+Good:
+> The handover from 2026-05-04 reported 90% GREEN on the L1 endpoint surface (last verified at 0.1.0-424). I haven't re-run the verification this session — the dev player isn't currently launched and AgentBridge has shipped fixes since. To confirm whether it still works, I should rebuild and use `@agent-bridge` against the running player.
+
+The good version names the source, names the staleness, and names the verification path. The bad version laundered all three.
+
+## When This Rule Does NOT Apply
+
+- Restating something the user just told you in this conversation
+- Reading a file in this turn and quoting it (the read IS the verification)
+- Static structural facts (file paths, namespace conventions) where checking would be theater
+- Hypotheticals you've explicitly framed as such ("if AgentBridge connects, then...")
+
+For everything else — anything that asserts current behavior of a running or buildable system — verify with a skill or say you haven't.
+
+<!-- agents-digest:start -->
+## Never delete repos or directories without asking — MANDATORY
+**NEVER delete, remove, or overwrite a git repo, project directory, or any directory tree without explicit user confirmation** — silence is not consent. `yokan-projects/` repos are local-only with no backups.
+- **NEVER:** `rm -rf` with a `*` glob in the path; delete a `.git/`; `rm -rf` anything under `yokan-projects/`; `git clean -fdx` without asking; `git checkout .` / `git restore .` on the whole tree.
+- Before deleting: `ls` the path and show it, state exactly what + why, wait for explicit OK, use exact paths (one item at a time).
+- Safer alternatives: `dotnet nuget locals all --clear` over `rm` globs; `git clean -fdn` (dry-run) first; `git stash` over `git checkout .`; `mv <dir> /tmp/<dir>_backup` over deleting.
+- Full: `.agent/rules/never-delete-repos.md`
+<!-- agents-digest:end -->
+
+# Never Delete Repos or Directories Without Asking
+
+## Rule — MANDATORY, NO EXCEPTIONS
+
+Agents MUST NEVER delete, remove, or overwrite git repositories, project directories, or any
+directory tree without **explicit user confirmation** first.
+
+### Absolute Prohibitions
+
+1. **NEVER use `rm -rf` with wildcards (`*`) in the path.** Glob expansion can match unexpected
+   paths. This has caused catastrophic data loss THREE TIMES.
+2. **NEVER delete a `.git/` directory** — this destroys all version history permanently.
+3. **NEVER run `rm -rf` on any directory under `yokan-projects/`** — these repos are LOCAL ONLY
+   with no remote backups. Deleted files are permanently gone.
+4. **NEVER run `git clean -fdx` without asking** — this removes untracked files which may include
+   important work-in-progress.
+5. **NEVER run `git checkout .` or `git restore .`** on the entire working tree without asking.
+
+### Before Deleting Anything
+
+1. **List first**: Run `ls <path>` and show the output to the user.
+2. **State exactly what will be deleted** and why.
+3. **Wait for explicit confirmation** — silence is NOT consent.
+4. **Use exact paths** — never wildcards. Delete one specific item at a time.
+
+### Safe Alternatives
+
+| Dangerous | Safe Alternative |
+|-----------|-----------------|
+| `rm -rf /path/with/glob*` | `ls /path/` first, then delete exact paths one by one |
+| `rm -rf ~/.nuget/packages/name.*` | `dotnet nuget locals all --clear` |
+| `git clean -fdx` | `git clean -fdn` (dry run first), then confirm |
+| `git checkout .` | `git stash` (preserves changes) |
+| Deleting a directory tree | `mv <dir> /tmp/<dir>_backup_$(date +%s)` |
+
+### Context
+
+- The root folder `C:\lunar-horse` is NOT a git repo — it is a shared workspace folder.
+- All `yokan-projects/` repos are **local only** — no git remotes, no cloud backups.
+- All `plate-projects/` repos have git remotes but local work may not be pushed.
+- Deleted files are permanently lost unless caught by Windows File Recovery within minutes.
+
+### Consequences
+
+This rule exists because `rm -rf` with glob patterns has destroyed project directories
+multiple times. The cost of asking before deleting is one message. The cost of not asking
+is days of lost work.
+
+<!-- agents-digest:start -->
+## Respect other agents' shared git index — MANDATORY
+The git index in every `C:\lunar-horse\` repo is **shared by concurrent agents**; staged files may be another agent's in-progress commit. **Never wipe staging broadly.**
+- **NEVER:** `git reset HEAD -- .` or any unscoped/directory `git reset`; `git restore --staged -- .` or a directory; `git stash` to "clean up" the index; `git checkout -- .` / `git restore -- .` on the tree.
+- Right way: `git commit -- <my-file…>` — a path-scoped commit takes your files without touching the index. Unstage one file with `git restore --staged -- <file>` (single file only).
+- If you already ran an unscoped reset: the working tree is intact — tell the user, don't re-stage guesses about what was there.
+- Full: `.agent/rules/respect-other-agents-git-index.md`
+<!-- agents-digest:end -->
+
+## Rule — MANDATORY, NO EXCEPTIONS
+
+The git index in every repo under `C:\lunar-horse\` is **shared by multiple agents working concurrently**. Files staged in the index may belong to another agent's in-progress commit. Wiping that staging area destroys their work-in-progress.
+
+### Absolute Prohibitions
+
+1. **NEVER run `git reset HEAD -- .`** or any unscoped `git reset HEAD -- <directory>`.
+2. **NEVER run `git reset` without a path argument** (i.e. plain `git reset` or `git reset HEAD`) — same effect, unstages everything.
+3. **NEVER run `git restore --staged -- .`** or with a directory pathspec — same hazard via the modern command name.
+4. **NEVER run `git stash`** to "clean up the index" — also wipes the other agent's staged work, even though it's recoverable. Disruptive.
+5. **NEVER run `git checkout -- .`** or `git restore -- .` on the working tree — destroys uncommitted edits across the tree, including other agents'.
+
+### Why
+
+Multiple agent CLIs (codex, copilot, kimi, droid, pi, the main session) operate on the same checkout simultaneously. They each:
+
+- Stage files (`git add`) for their own commits.
+- May leave files staged across multiple turns while doing their work.
+- Are not aware of each other.
+
+An unscoped reset/restore from one agent silently undoes another agent's staging. The other agent then commits an incomplete index, or wastes time figuring out why their files vanished from `git diff --cached`.
+
+### Correct Workflow
+
+| Goal | Wrong | Right |
+|------|-------|-------|
+| Commit only my own files when others are also staged | `git reset HEAD -- .` then `git add <mine>` then `git commit` | `git commit -- <my-file-1> <my-file-2>` (path-scoped commit selects from the index without touching it) |
+| Unstage one file I mistakenly added | `git reset HEAD -- .` | `git restore --staged -- <specific-file>` (single file, never a directory) |
+| See what's staged before committing | `git diff --cached --stat` — read-only, safe |
+| Pre-commit hook auto-staged its own fixes (whitespace, lint) | These belong with the change — just commit them all |
+
+### Path-Scoped Commit Pattern
+
+```bash
+# Stage just my files
+git add path/to/my-file-1.cs path/to/my-file-2.md
+
+# Commit ONLY those paths from the index, regardless of what else is staged
+git commit -- path/to/my-file-1.cs path/to/my-file-2.md -m "message"
+```
+
+The trailing pathspec on `git commit` filters the commit to those paths only. Other agents' staged files remain in the index, ready for their own commit. No reset needed.
+
+### If You Realize You Already Did This
+
+`git reset HEAD -- .` is recoverable:
+
+- Working-tree files are untouched (only the index pointer moved). Other agents can re-`git add` their files and continue.
+- Tell the user immediately so they can warn the other agent.
+- Do NOT try to "fix" it by re-staging guesses about what was there — you don't know what the other agent had selected.
+
+### Context
+
+- All `yokan-projects/` repos run multi-agent workflows by design (see `vault/feedback_external_agents.md`).
+- The main Claude Code session orchestrates external CLIs via `.agent/run/dispatch/*.ps1`; those CLIs commit through their own `git` calls in the same checkout.
+- Pre-commit hooks may stash and restore the working tree across hook execution; that is normal hook plumbing and not "other agent work" — but it should not be used as cover to also wipe the index.
+
+### Consequences
+
+This rule exists because the main session unstaged 261 files (other agents' pending deletions of stale `.agent/logs/` and renames into `.agent/reports/`) twice in one session before the user caught it. Recovery was easy — but if the other agent had already begun building a commit on top of that staging, they would have committed an incomplete change and only noticed in review.
+
+The cost of using `git commit -- <files>` instead of `git reset HEAD -- .` is zero. The cost of stomping another agent's index is a debugging session for whoever's affected.
+
+# Shared Native Dependencies (vcpkg)
+
+## Rule
+
+Agents MUST NOT vendor a per-repo `vcpkg/` checkout in any project under `C:\lunar-horse\`. The workspace has ONE shared vcpkg installation at:
+
+```
+C:\lunar-horse\packages\vcpkg\
+```
+
+Exposed via the user-level env var **`VCPKG_ROOT=C:\lunar-horse\packages\vcpkg`**.
+
+All native (C/C++/CMake) builds that consume vcpkg ports must resolve the toolchain via `VCPKG_ROOT`, not a sibling `./vcpkg/` directory.
+
+## Why
+
+- **Disk**: a populated vcpkg checkout is multi-GB. One copy per repo wastes 5+ GB each.
+- **Compile time**: `installed/` (the compiled libs — proj, s2geometry, rocksdb, etc.) is the expensive artifact. Sharing it across consumers means a port compiled once for `x64-windows` is reused everywhere.
+- **Version coherence**: one canonical vcpkg checkout means every consumer sees the same ports tree, same triplets, same baselines.
+- **Mirrors the existing pattern**: `C:\lunar-horse\packages\nuget\` already serves as the shared NuGet feed. vcpkg follows the same model — `packages/` = shared package stores.
+
+## How to Apply
+
+### When writing a new CMake project that needs vcpkg ports
+
+In CMake, pass the toolchain via `VCPKG_ROOT`:
+
+```cmake
+# CMakeLists.txt — no hardcoded paths needed
+find_package(PROJ CONFIG REQUIRED)
+find_package(s2 CONFIG REQUIRED)
+```
+
+```bash
+# Configure (VCPKG_ROOT is in env)
+cmake -S . -B build \
+    -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+cmake --build build --config Release
+```
+
+### When using `unify-build` (Nuke) to build native components
+
+Do nothing extra. `unify-build`'s `IUnifyNative.TryDetectVcpkgToolchain` already prefers `VCPKG_ROOT` over repo-local `./vcpkg/`. The build will use the shared install automatically.
+
+### When adding ports
+
+Install ports into the shared `installed/x64-windows` once; every repo picks them up:
+
+```powershell
+& "$env:VCPKG_ROOT\vcpkg.exe" install <port>:x64-windows
+```
+
+### When editing a README that documents native builds
+
+Replace any "clone vcpkg locally" / `./vcpkg/scripts/buildsystems/vcpkg.cmake` instructions with `VCPKG_ROOT` references. Example transformation:
+
+```diff
+- git clone https://github.com/Microsoft/vcpkg.git
+- .\vcpkg\bootstrap-vcpkg.bat
+- .\vcpkg\vcpkg install proj:x64-windows
+- cmake -DCMAKE_TOOLCHAIN_FILE="./vcpkg/scripts/buildsystems/vcpkg.cmake" ...
++ # Ensure VCPKG_ROOT is set (workspace convention: C:\lunar-horse\packages\vcpkg)
++ & "$env:VCPKG_ROOT\vcpkg.exe" install proj:x64-windows
++ cmake -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" ...
+```
+
+## Anti-Patterns
+
+- **Vendoring a per-repo `vcpkg/`** — disk waste, version drift, broken on machines with different layouts.
+- **Hardcoded absolute paths** to a sibling repo's vcpkg (e.g. `d:/lunar-snake/.../unify-maths/vcpkg/installed/x64-windows/include`). These break the moment the workspace is restructured or cloned to another machine.
+- **CMake `find_package` with `PATHS` pointing at a literal vcpkg path** — defeats the toolchain abstraction; use the toolchain file instead.
+
+## Pre-Existing References to Audit
+
+The following files were known to reference a non-shared vcpkg location and should be migrated to `VCPKG_ROOT` when their owning repos are next touched:
+
+- `plate-projects/unify-maths/native/README.md` — "clone vcpkg" instructions
+- `plate-projects/unify-ingest/native/CMakeLists.txt` — hardcoded absolute path to a different workspace
+- `plate-projects/unify-storage/native/README.md` — generic placeholder; mention the workspace convention
+- `yokan-projects/fantasim-hub/docs/app-godot/handovers/GDEXTENSION-*.md` — historical handovers; update as the GDExtension work resumes
+
+## When This Rule Does NOT Apply
+
+- **CI / cloud builds**: CI runners may use `$VCPKG_INSTALLATION_ROOT` (GitHub Actions standard) instead of `VCPKG_ROOT`. Either works; `unify-build` detects both.
+- **A repo deliberately pinning to a different vcpkg commit**: rare and must be justified in writing in the repo's README. Prefer a manifest-mode `vcpkg.json` baseline override before vendoring.
+- **Cross-machine compatibility outside `C:\lunar-horse\`**: if the repo is intended to be cloned and built on machines that don't have this workspace layout, document the `VCPKG_ROOT` requirement in the repo README and accept that consumers will set it to their own location.
+
+# Verify Godot Export
+
+## Rule
+
+Agents MUST verify UI and scene changes by building and running the Godot app in windowed mode.
+A successful `dotnet build` alone is NOT sufficient.
+
+### Why
+
+Godot scenes, scripts, and node wiring can fail silently at build time. Missing nodes, broken
+signals, layout issues, and runtime errors only surface when the exported app actually runs.
+
+### Godot Executable
+
+```
+C:\lunar-horse\tools\Godot_v4.6.3-stable_mono_win64\
+```
+
+### Verification for fantasim-app-godot
+
+1. `cd C:\lunar-horse\yokan-projects\fantasim-app-godot`
+2. `task build:app` — exports complete-app EXE
+3. `task run:complete-app` — runs exported EXE from artifacts dir
+
+**CRITICAL**: `build:app` does NOT rebuild bundle PCKs. When GDScript in bundles changes,
+also run `task build:bundles --force`.
+
+### When to Verify
+
+| Situation | Action |
+|-----------|--------|
+| Modified `.tscn` scene file | Build + Run (windowed) |
+| Changed a Godot Node subclass | Build + Run (windowed) |
+| Wired signals or node references | Build + Run (windowed) |
+| Changed autoload configuration | Build + Run (windowed) |
+| Pure C# logic (no Godot types) | `dotnet build` + tests sufficient |
+
+<!-- agents-digest:start -->
+## Write changes inside the active project, not the workspace
+**Write and edit files inside the active git repo** (`yokan-projects/<repo>/`, `plate-projects/<repo>/`, `contract-projects/<repo>/`) — **not** the non-versioned workspace root `C:\lunar-horse\`. Files in the root never appear in `git status`, never get committed, and don't reach other machines or agents.
+- "It's general / cross-project" is not a reason to write higher up — copy it into each repo that needs it.
+- Carve-outs, only on explicit user direction: `<lunar-horse>/.agent/skills/`, `<lunar-horse>/.agent/rules/`, and explicitly-named root files (this `AGENTS.md`, `CLAUDE.md`). Tooling-owned paths (harness memory, `/tmp`) are exempt.
+- Full: `.agent/rules/write-changes-inside-the-active-project.md`
+<!-- agents-digest:end -->
+
+# Write Changes Inside the Active Project, Not the Workspace
+
+## Rule
+
+When you create or edit project files — rules, skills, docs, configs, code, anything — **write them inside the active git repository**, not in the workspace parent directory. The active project is the git repo your work targets (typically the path under "Primary working directory" in your session env, or the repo containing the file the user just asked you to edit). That is where every change belongs unless the user explicitly tells you otherwise.
+
+In this workspace, the layout is:
+
+- `C:\lunar-horse\` — workspace root, **not** a git repo, **not** versioned
+- `C:\lunar-horse\yokan-projects\<repo>\` — first-party repos
+- `C:\lunar-horse\plate-projects\<repo>\` — first-party libraries
+- `C:\lunar-horse\contract-projects\<repo>\` — client / contract repos
+
+A file written into the workspace root or any of its non-repo subdirectories:
+
+- Doesn't appear in any `git status` (the user can't review it)
+- Doesn't get committed alongside the work
+- Doesn't travel to other machines or other agents' clones
+- Won't be there for the next session that opens a fresh checkout
+
+## Why
+
+The mental model that produces this mistake is "this thing is general / cross-project, so it should live higher up." That model is wrong for this setup: the workspace is not a shared rule / skill / doc store. Each repo owns its own rules, skills, conventions, and docs. If a rule or doc turns out to be useful in another project, copy it there explicitly — don't try to share via the workspace folder.
+
+There are two carve-outs to this default that are governed by other rules:
+
+1. **`<lunar-horse>/.agent/skills/`** — the workspace-level skill library. Skills here are deliberately shared across projects via per-project junctions. Edit a skill at this path **only when the user explicitly asks for a workspace-level skill change** or when you've been directed to lift a project-level skill up to workspace scope.
+2. **`<lunar-horse>/.agent/rules/`** — workspace-level always-active rules (this file is one). Same gating: explicit user direction.
+
+## How to Apply
+
+Before any `Write` or new-file `Edit`:
+
+1. **Check the path.** Does it start with one of the per-repo prefixes (`yokan-projects/<repo>/`, `plate-projects/<repo>/`, `contract-projects/<repo>/`)? If yes, proceed. If it starts with `C:\lunar-horse\` directly with no `<bucket>/<repo>/` segment, **stop and re-evaluate**.
+2. **If you were about to write outside any repo, ask yourself why.** The answer "to share across projects" is not a valid reason — make the change inside the active repo and copy it explicitly to other repos that need it. The exception is the two workspace-level paths listed above, and only when the user explicitly asked for that scope.
+3. **If the user explicitly directs you** to edit a workspace-level file (e.g. "edit `C:\lunar-horse\CLAUDE.md`", "add this skill to lunar-horse"), then do that — but only when explicitly directed, not as a default.
+
+Sanity-check rule of thumb: every file you write should appear in some repo's `git status` afterward, OR live under a workspace-level path you were explicitly told to edit. If neither is true, you wrote in the wrong place.
+
+## When This Rule Does NOT Apply
+
+- The user explicitly names a path outside any repo and asks you to edit it.
+- You're writing to a tooling-managed location the harness owns (memory under `~/.claude/projects/...`, log files under `/tmp`, etc.) — those are not "project files" in the sense this rule governs.
+- You're editing config in the user's home directory at the user's request (e.g. `~/.kimi/mcp.json`).
+- You're editing one of the two carve-out paths (`<lunar-horse>/.agent/skills/`, `<lunar-horse>/.agent/rules/`) and the user has explicitly scoped the change to workspace level.
+
+For everything else — rules, skills, docs, code, build configs — write inside the active repo.

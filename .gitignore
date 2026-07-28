@@ -54,7 +54,6 @@ build-*.ps1
 .windsurf/
 CLAUDE.md
 GEMINI.md
-AGENTS.md
 
 # CodeGraph local index
 .codegraph/

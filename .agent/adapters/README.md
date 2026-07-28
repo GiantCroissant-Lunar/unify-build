@@ -3,8 +3,8 @@
 Adapter configuration is grouped by responsibility:
 
 - `targets/` describes generated agent-resource surfaces. The shared `agents`
-  target writes `.agents/skills/` and `AGENTS.md`; Kiro writes its native
-  `.kiro/` structure.
+  target writes `.agents/skills/`, Claude writes a `CLAUDE.md` pointer to the
+  tracked canonical `AGENTS.md`, and Kiro writes its native `.kiro/` structure.
 - `runners/` records CLI invocation and context metadata for tools that consume
   an existing target without requiring their own generated resource surface.
 
