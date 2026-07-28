@@ -172,8 +172,6 @@ class Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity, IUnifyGodot, IUnifyS
 
     public static int Main()
     {
-        AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
-
         // Find and set root directory before Nuke initializes
         var rootDirectory = FindBuildConfigDirectory();
         Environment.SetEnvironmentVariable("NUKE_ROOT_DIRECTORY", rootDirectory);
