@@ -6,57 +6,73 @@ UnifyBuild is a .NET build orchestration system built on [NUKE](https://nuke.bui
 
 ## Distribution Surfaces
 
-The repository exposes three public artifacts:
+The repository ships three **packaged** artifacts:
 
-- `UnifyBuild.Nuke` is the foundation NuGet package. It contains config loading, runtime models, validation, and reusable build components.
-- `UnifyBuild.Tool` is the NuGet-distributed CLI. It composes the exported interfaces from `UnifyBuild.Nuke` into the `dotnet unify-build` entrypoint.
-- `com.unifybuild.editor` is the standalone Unity package under `unity/com.unifybuild.editor`. It contains editor-side batch-mode entrypoints invoked by the .NET orchestration layer.
+| Artifact | Channel | Source |
+|---|---|---|
+| `UnifyBuild.Nuke` | NuGet | `dotnet/src/UnifyBuild.Nuke` |
+| `UnifyBuild.Tool` | NuGet (.NET tool) | `dotnet/src/UnifyBuild.Tool` |
+| `com.unifybuild.editor` | UPM / OpenUPM | `unity/com.unifybuild.editor` |
+
+- `UnifyBuild.Nuke` is the foundation package. It contains config loading, runtime models, validation, and reusable build components.
+- `UnifyBuild.Tool` is the CLI. It composes a subset of the exported interfaces from `UnifyBuild.Nuke` into the `dotnet unify-build` entrypoint.
+- `com.unifybuild.editor` contains editor-side batch-mode entrypoints invoked by the .NET orchestration layer.
 
 This split is intentional: Unity build/export orchestration remains in the .NET layer because it runs outside the Unity editor, while Unity editor automation is packaged separately as a UPM/OpenUPM-friendly asset.
 
+Two additional developer-facing surfaces live in the repository but are not consumed as packages:
+
+- `vscode-extension/` — VS Code extension providing schema-backed IntelliSense, hover docs, snippets, a project-groups tree view, and command-palette access to `init`/`validate`/`doctor`.
+- `dashboard/` — a dependency-free single-page app that visualizes the JSON metrics emitted when [`observability.enableMetrics`](../reference/configuration-reference.md#observability-configuration) is on.
+
 ```
-┌─────────────────────────────────────────────────────┐
-│                  UnifyBuild.Tool                     │
-│                                                      │
-│  Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity│
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐│
-│  │   Init   │ │ Validate │ │  Doctor  │ │ Migrate ││
-│  └──────────┘ └──────────┘ └──────────┘ └─────────┘│
-└──────────────────────┬──────────────────────────────┘
+┌───────────────────────────────────────────────────────────────┐
+│                       UnifyBuild.Tool                          │
+│                                                                │
+│  Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity,         │
+│          IUnifyGodot, IUnifyMobile, IUnifyUnityExport,         │
+│          IUnifySchemaGeneration                                │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐           │
+│  │   Init   │ │ Validate │ │  Doctor  │ │ Migrate │           │
+│  └──────────┘ └──────────┘ └──────────┘ └─────────┘           │
+└──────────────────────┬────────────────────────────────────────┘
                        │ references
-┌──────────────────────▼──────────────────────────────┐
-│                 UnifyBuild.Nuke                      │
-│                                                      │
-│  ┌──────────────────────────────────────────────┐   │
-│  │           IUnifyBuildConfig (base)            │   │
-│  │  ┌─────────────┐  ┌──────────────────────┐   │   │
-│  │  │ UnifyConfig  │  │ BuildContextLoader   │   │   │
-│  │  │ (BuildContext)│  │ .FromJson()          │   │   │
-│  │  └─────────────┘  └──────────────────────┘   │   │
-│  └──────────────────────────────────────────────┘   │
-│                                                      │
-│  ┌────────────┐ ┌──────────┐ ┌───────────────┐     │
-│  │IUnifyCompile│ │IUnifyPack│ │IUnifyPublish  │     │
-│  └─────┬──────┘ └────┬─────┘ └───────────────┘     │
-│        │              │                              │
-│  ┌─────┴──────┐ ┌────┴─────┐ ┌──────────────┐      │
-│  │IUnifyNative│ │IUnifyRust│ │ IUnifyGo     │      │
-│  └────────────┘ └──────────┘ └──────────────┘      │
-│  ┌────────────┐                                     │
-│  │IUnifyUnity │                                     │
-│  └────────────┘                                     │
-│                                                      │
-│  Performance/        Validation/       Commands/     │
-│  ├─ChangeDetection   ├─ConfigValidator  ├─InitCommand│
-│  ├─BuildCache         └─ValidationResult ├─DoctorCmd │
-│  └─BuildMetrics                         ├─ValidateCmd│
-│                                         └─MigrateCmd │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────▼────────────────────────────────────────┐
+│                      UnifyBuild.Nuke                           │
+│                                                                │
+│  ┌──────────────────────────────────────────────┐             │
+│  │           IUnifyBuildConfig (base)            │             │
+│  │  ┌───────────────┐  ┌──────────────────────┐ │             │
+│  │  │  UnifyConfig  │  │ BuildContextLoader   │ │             │
+│  │  │ (BuildContext)│  │ .FromJson()          │ │             │
+│  │  └───────────────┘  └──────────────────────┘ │             │
+│  └──────────────────────────────────────────────┘             │
+│                                                                │
+│  .NET ───────────────────────────────────────────┐            │
+│  │ IUnifyCompile ─┬─ IUnifyPack  ─┐              │            │
+│  │                └─ IUnifyPublish ┴─ IUnify     │            │
+│  └───────────────────────────────────────────────┘            │
+│  Native ─────────────┐  Engines ─────────────────┐            │
+│  │ IUnifyNative      │  │ IUnifyUnity            │            │
+│  │ IUnifyRust      * │  │ IUnifyUnityExport      │            │
+│  │ IUnifyGo        * │  │ IUnifyGodot            │            │
+│  └───────────────────┘  │ IUnifyMobile           │            │
+│                         └────────────────────────┘            │
+│  IUnifySchemaGeneration                  * library only —     │
+│                                            not in the CLI     │
+│                                                                │
+│  Performance/        Validation/         Commands/             │
+│  ├─ChangeDetection   ├─ConfigValidator   ├─InitCommand         │
+│  ├─BuildCache        └─ValidationResult  ├─ConfigWizard        │
+│  └─BuildMetrics                          ├─DoctorCommand       │
+│  PackageManagement/  Telemetry/          ├─ValidateCommand     │
+│  Diagnostics/        Extensibility/      └─MigrateCommand      │
+└────────────────────────────────────────────────────────────────┘
                        │ reads
-┌──────────────────────▼──────────────────────────────┐
-│              build.config.json                       │
-│  { "$schema": "...", "projectGroups": { ... } }     │
-└──────────────────────────────────────────────────────┘
+┌──────────────────────▼────────────────────────────────────────┐
+│                     build.config.json                          │
+│      { "$schema": "...", "projectGroups": { ... } }           │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Interface Pattern
@@ -91,17 +107,36 @@ class Build : NukeBuild, IUnify, IUnifyNative, IUnifyUnity
 
 ```
 IUnifyBuildConfig (base — provides UnifyConfig)
-├── IUnifyCompile (Compile, CompileProjects targets)
-│   ├── IUnifyPack : IUnifyCompile (Pack, PackContracts, PackAll targets)
-│   │   └── IUnifyPublish : IUnifyPack (Publish targets)
-│   │       └── IUnify : IUnifyPublish, IUnifyPack (convenience aggregate)
-│   └── IUnifyUnity : IUnifyCompile (BuildForUnity target)
-├── IUnifyNative (Native target — CMake builds)
-├── IUnifyRust (RustBuild target — Cargo builds)
-└── IUnifyGo (GoBuild target — Go builds)
+├── IUnifyCompile ............. Compile, CompileProjects
+│   ├── IUnifyPack ............ Pack, PackContracts, PackProjects, PackAll, SyncLocalFeed
+│   ├── IUnifyPublish ......... PublishHosts, PublishPlugins, PublishProjects, SyncLatestArtifacts
+│   ├── IUnifyUnity ........... BuildForUnity
+│   └── IUnifyGodot ........... BuildGodot, BuildGodotDesktop, BuildGodotMobile
+├── IUnifyNative .............. Native (CMake)
+├── IUnifyRust ................ RustBuild (Cargo)
+├── IUnifyGo .................. GoBuild
+├── IUnifyMobile .............. MobileRestore, MobileBuild*, MobileDeploy* (Fastlane)
+├── IUnifyUnityExport ......... UnityExport, UnityExportDesktop, UnityExportMobile
+└── IUnifySchemaGeneration .... GenerateSchema
+
+IUnify : IUnifyPublish, IUnifyPack ... convenience aggregate (no targets of its own)
 ```
 
-Each interface defines one or more NUKE `Target` properties. NUKE discovers and orchestrates these targets automatically.
+`IUnifyPack` and `IUnifyPublish` are **siblings** — both extend `IUnifyCompile` directly, and neither derives from the other. `IUnify` exists to pull both into a single interface.
+
+Each interface defines one or more NUKE `Target` properties. NUKE discovers and orchestrates these targets automatically. See the [Targets Reference](../reference/targets.md) for the full catalog with dependencies.
+
+### What the CLI composes
+
+The `unify-build` tool does **not** implement every interface:
+
+```csharp
+class Build : NukeBuild,
+    IUnify, IUnifyNative, IUnifyUnity, IUnifyGodot,
+    IUnifySchemaGeneration, IUnifyMobile, IUnifyUnityExport
+```
+
+`IUnifyRust` and `IUnifyGo` ship in `UnifyBuild.Nuke` but are not composed into the CLI. Consumers who need `RustBuild` or `GoBuild` implement those interfaces in their own NUKE build class. This is the same extension mechanism used for [custom components](#1-adding-a-new-component-interface).
 
 ### Target Composition
 
@@ -144,7 +179,9 @@ BuildContext     (AbsolutePath, resolved arrays, computed defaults)
 2. Resolving version from environment variables (`GITVERSION_MAJORMINORPATCH`, etc.)
 3. Converting relative paths to `AbsolutePath` values
 4. Discovering projects in each `ProjectGroup` via `DiscoverProjectsInGroup()`
-5. Creating sub-contexts (`NativeBuildContext`, `RustBuildContext`, `GoBuildContext`, `UnityBuildContext`)
+5. Creating sub-contexts (`NativeBuildContext`, `RustBuildContext`, `GoBuildContext`, `UnityBuildContext`, `UnityExportContext`, `GodotBuildContext`, `MobileBuildContext`)
+
+Several sub-contexts are created by convention even when their config section is absent: a `native/CMakeLists.txt` activates native builds, and a `mobile/` directory activates mobile builds. Output directories default to `build/_artifacts/{version}/<kind>` — `native`, `rust`, `go`, `godot`, `mobile`, `unity-export`.
 
 When Unity export automation is configured, the runtime context bridges the two release surfaces: the .NET side resolves the paths and orchestration data, then invokes editor entrypoints shipped in `com.unifybuild.editor`.
 
@@ -166,11 +203,18 @@ public sealed class BuildJsonConfig
     public RustBuildConfig? RustBuild { get; set; }
     public GoBuildConfig? GoBuild { get; set; }
     public UnityBuildJsonConfig? UnityBuild { get; set; }
+    public UnityExportConfig? UnityExport { get; set; }
+    public GodotBuildConfig? GodotBuild { get; set; }
+    public MobileBuildConfig? MobileBuild { get; set; }
+    public PackageManagementConfig? PackageManagement { get; set; }
+    public PerformanceConfig? Performance { get; set; }
+    public ObservabilityConfig? Observability { get; set; }
+    public ExtensionsConfig? Extensions { get; set; }
     // ... additional properties
 }
 ```
 
-Each build type has a corresponding config class (e.g., `RustBuildConfig`) that maps to a runtime context record (e.g., `RustBuildContext`).
+Each build type has a corresponding config class (e.g., `RustBuildConfig`) that maps to a runtime context record (e.g., `RustBuildContext`). The config classes live in `Models/`; the schema is generated from them by reflection, so adding a property to a model is what makes it appear in `build.config.schema.json`. See the [Configuration Reference](../reference/configuration-reference.md) for the user-facing view of every property.
 
 ### BuildContext (Runtime Model)
 
@@ -186,6 +230,9 @@ public sealed record BuildContext
     public RustBuildContext? RustBuild { get; init; }
     public GoBuildContext? GoBuild { get; init; }
     public UnityBuildContext? UnityBuild { get; init; }
+    public UnityExportContext? UnityExport { get; init; }
+    public GodotBuildContext? GodotBuild { get; init; }
+    public MobileBuildContext? MobileBuild { get; init; }
     // ... additional properties
 }
 ```
@@ -226,17 +273,35 @@ dotnet/
 │   │   ├── IUnifyNative.cs            # CMake builds
 │   │   ├── IUnifyRust.cs              # Cargo builds
 │   │   ├── IUnifyGo.cs                # Go builds
-│   │   ├── IUnifyUnity.cs             # Unity builds
+│   │   ├── IUnifyUnity.cs             # Unity package DLL staging
+│   │   ├── IUnifyUnityExport.cs       # Unity player export
+│   │   ├── IUnifyGodot.cs             # Godot export
+│   │   ├── IUnifyMobile.cs            # Fastlane build + deploy
+│   │   ├── IUnifySchemaGeneration.cs  # Schema generation
 │   │   ├── BuildContext.cs            # Runtime config model
-│   │   ├── BuildConfigJson.cs         # JSON model + BuildContextLoader
-│   │   ├── Commands/                  # CLI commands
+│   │   ├── BuildConfigJson.cs         # JSON model (BuildJsonConfig)
+│   │   ├── BuildContextLoader.cs      # JSON → BuildContext resolution
+│   │   ├── BuildConfigSchemaGenerator.cs  # Reflection-based schema emit
+│   │   ├── *BuildContext.cs           # Runtime sub-contexts per build kind
+│   │   ├── Models/                    # JSON config classes (schema source)
+│   │   ├── Commands/                  # CLI commands + config wizard
 │   │   ├── Diagnostics/               # Error codes and messages
 │   │   ├── Validation/                # Config validation
-│   │   └── Performance/               # Caching, metrics, change detection
+│   │   ├── Performance/               # Caching, metrics, change detection
+│   │   ├── PackageManagement/         # Registries, signing, SBOM, retention
+│   │   ├── Telemetry/                 # Local opt-in telemetry
+│   │   └── Extensibility/             # Plugin assembly loading
 │   └── UnifyBuild.Tool/              # CLI tool (dotnet unify-build)
-│       └── Build.cs                   # Composes all components
+│       └── Build.cs                   # Composes components + command targets
 ├── tests/
 │   ├── UnifyBuild.Nuke.Tests/         # Unit + property tests
-│   └── UnifyBuild.Integration.Tests/  # End-to-end tests
+│   ├── UnifyBuild.Integration.Tests/  # End-to-end tests
+│   └── UnifyBuild.Package.Tests/      # Packaging / distribution tests
 └── UnifyBuild.sln
+
+unity/com.unifybuild.editor/           # Unity editor entrypoints (UPM)
+vscode-extension/                      # VS Code extension
+dashboard/                             # Build metrics dashboard (static SPA)
+examples/                              # Documented consumer examples
+fixtures/                              # Repo-internal dogfooding fixtures
 ```

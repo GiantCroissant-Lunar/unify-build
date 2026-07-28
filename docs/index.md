@@ -6,6 +6,8 @@ A .NET build orchestration system built on [NUKE](https://nuke.build/) that prov
 
 - [Getting Started](guides/getting-started.md) — Installation and first build
 - [Configuration Reference](reference/configuration-reference.md) — All `build.config.json` properties
+- [Targets](reference/targets.md) — Every build target, its dependencies, and where it's available
+- [CLI](reference/cli.md) — `init`, `validate`, `doctor`, `migrate`, and global parameters
 - [Examples](examples/dotnet-library.md) — End-to-end project examples
 - [Architecture](architecture/index.md) — Component design and extension points
 - [Specifications](specs/index.md) — Feature requirements, design notes, and implementation tasks

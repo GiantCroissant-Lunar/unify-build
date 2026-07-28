@@ -54,6 +54,8 @@ nav:
     - Troubleshooting: guides/troubleshooting.md
   - Reference:
     - Configuration Reference: reference/configuration-reference.md
+    - Targets: reference/targets.md
+    - CLI: reference/cli.md
     - Caching: reference/caching.md
     - Telemetry: reference/telemetry.md
   - Examples:
